@@ -1,0 +1,21 @@
+name: Limbo
+version: 1.8
+authors: [Baktus_79]
+main: no.vestlandetmc.Limbo.LimboPlugin
+description: Puts a player in limbo.
+website: www.vestlandetmc.no
+prefix: Limbo
+api-version: 1.13
+commands:
+  limbo:
+    description: Place a player in limbo.
+    usage: /limbo [player] (reason)
+  templimbo:
+    description: Place a player temporary in limbo.
+    usage: /templimbo [player] [time] (reason)
+  unlimbo:
+    description: Remove a player from limbo.
+    usage: /unlimbo [player]
+  limbolist:
+    description: List players that are placed in limbo.
+    usage: /limbolist

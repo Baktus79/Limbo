@@ -1,0 +1,30 @@
+helpCommand:
+  limboHelp: '&a/limbo help &7- Display this help page'
+  limbo: '&a/limbo [player] (reason) &7- Place a troll in limbo'
+  templimbo: '&a/templimbo [player] [time] (reason) &7- Place a troll temporary in limbo'
+  unlimbo: '&a/unlimbo [player] &7- Remove a player from limbo'
+  limbolist: '&a/limbolist &7- Display a list of all the players in limbo'
+  limboReload: '&a/limbo reload &7- Reload the plugin'
+limboList:
+  listHeader: '&7-------------- [ &aPlayers in limbo ] &7--------------'
+  noPlayersInLimbo: '&cNo players in Limbo!'
+  permanent: '&aPermanent'
+  temporary: 'Until &a%time%'
+  placedInLimbo: 'Placed in limbo:'
+  placedInLimboBy: '%player% was placed in &climbo &fby %bywhom%: &a%reason%'
+warningMessages:
+  missingPermission: '&cYou do not have permission to use this command'
+  playerIsNotOnline: '&cPlayer %player% is not online or not a valid name. Check for spelling errors!'
+  playerBypass: '&cYou can not send %player% to limbo!'
+  playerExistInLimbo: '&cPlayer %player% is already in Limbo!'
+  playerIsNotInLimbo: '&cPlayer %player% is not in limbo!'
+  typeValidNumber: '&cYou need to type in a valid number!'
+  correctFormat: '&cUse correct format: /templimbo [player] [time] (reason)'
+  blacklistedCommand: '&cThis command can not be used when in limbo!'
+announce:
+  placedInLimbo: '&a%player% &fhas been placed in Limbo by %bywhom%. Reason: &a%reason%'
+  temporaryLimbo: '&a%player% &fhas been placed in Limbo by %bywhom% until &a%time%&f. Reason: &a%reason%'
+  releasedLimbo: '&a%player% &fhas been released from Limbo by %bywhom%.'
+  noReason: 'No reason'
+notifier:
+  reload: '&2[Limbo] Config and language file has been reloaded!'

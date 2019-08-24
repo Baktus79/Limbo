@@ -1,0 +1,14 @@
+Chat:
+  # Type in commands you would like to disable when in limbo.
+  BlackListedCommands:
+  - msg
+  - tell
+  - m
+  - r
+  - reply
+WorldSettings:
+  DisableBlockBreak: true
+  DisableBlockPlace: true
+  DisableItemPickup: true
+  DisableChat: true
+  DisableVisible: true
