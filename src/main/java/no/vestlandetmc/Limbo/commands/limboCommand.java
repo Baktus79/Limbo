@@ -21,6 +21,7 @@ public class limboCommand implements CommandExecutor {
 
 	File file;
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (!(sender instanceof Player)) {
@@ -74,7 +75,7 @@ public class limboCommand implements CommandExecutor {
 
 		if(Config.VISIBLE) {
 			for (final Player p : Bukkit.getOnlinePlayers()) {
-				player.hidePlayer(LimboPlugin.getInstance(), p);
+				player.hidePlayer(p);
 			}
 		}
 

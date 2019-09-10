@@ -11,10 +11,10 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 
 import no.vestlandetmc.Limbo.LimboPlugin;
 import no.vestlandetmc.Limbo.config.Config;
@@ -22,6 +22,7 @@ import no.vestlandetmc.Limbo.config.Messages;
 import no.vestlandetmc.Limbo.handler.DataHandler;
 import no.vestlandetmc.Limbo.handler.UpdateNotification;
 
+@SuppressWarnings("deprecation")
 public class PlayerListener implements Listener {
 
 	@EventHandler
@@ -34,7 +35,7 @@ public class PlayerListener implements Listener {
 				for(final String limboPlayers : LimboPlugin.getInstance().getDataFile().getKeys(false)) {
 					if(LimboPlugin.getInstance().getDataFile().getBoolean(limboPlayers.toString() + ".limbo")) {
 						final Player playerInLimbo = LimboPlugin.getInstance().getServer().getPlayer(UUID.fromString(limboPlayers));
-						playerInLimbo.getPlayer().hidePlayer(LimboPlugin.getInstance(), player);
+						playerInLimbo.getPlayer().hidePlayer(player);
 					}
 				}
 			} catch (final NullPointerException e) {
@@ -42,7 +43,7 @@ public class PlayerListener implements Listener {
 
 			if(DataHandler.isLimbo(player)) {
 				for (final Player limboP : Bukkit.getOnlinePlayers()) {
-					player.hidePlayer(LimboPlugin.getInstance(), limboP);
+					player.hidePlayer(limboP);
 				}
 			}
 		}
@@ -68,6 +69,7 @@ public class PlayerListener implements Listener {
 				e.setCancelled(true);
 				e.getRecipients().remove(player);
 				player.sendMessage(ChatColor.RED + "[Limbo] " + ChatColor.WHITE +  "<" + player.getDisplayName() + "> " + e.getMessage());
+				DataHandler.sendConsole("&c[Limbo] &f<" + player.getName() + "> " + e.getMessage());
 				for (final Player perm : Bukkit.getOnlinePlayers()) {
 					if(perm.hasPermission("limbo.chatvisible")) {
 						perm.sendMessage(ChatColor.RED + "[Limbo] " + ChatColor.WHITE +  "<" + player.getDisplayName() + "> " + e.getMessage());
@@ -111,15 +113,16 @@ public class PlayerListener implements Listener {
 				if(e.getMessage().startsWith("/" + Config.BLACKLISTED_COMMANDS.get(i))) {
 					e.setCancelled(true);
 					DataHandler.sendMessage(player, Messages.placeholders(Messages.BLACKLISTED_COMMANDS, player.getName(), null, null, null));
+					return;
 				}
 			}
 		}
 	}
 
 	@EventHandler
-	public void onPickup(EntityPickupItemEvent e) {
-		if(e.getEntity() instanceof Player) {
-			final Player player = (Player) e.getEntity();
+	public void onPickup(PlayerPickupItemEvent e) {
+		if(e.getPlayer() instanceof Player) {
+			final Player player = e.getPlayer();
 			if(DataHandler.isLimbo(player)) {
 				e.setCancelled(Config.ITEM_PICKUP);
 			}

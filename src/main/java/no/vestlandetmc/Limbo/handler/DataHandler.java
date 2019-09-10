@@ -24,6 +24,7 @@ public class DataHandler {
 		return false;
 	}
 
+	@SuppressWarnings("deprecation")
 	public static void checkTime() {
 		final Date now = new Date();
 		final long unixTime = now.getTime();
@@ -36,7 +37,7 @@ public class DataHandler {
 						if(player.isOnline()) {
 							final Player oPlayer = Bukkit.getPlayer(player.getName());
 							for (final Player onlinePlayers : Bukkit.getOnlinePlayers()) {
-								oPlayer.getPlayer().showPlayer(LimboPlugin.getInstance(), onlinePlayers);
+								oPlayer.getPlayer().showPlayer(onlinePlayers);
 							}
 						}
 						LimboPlugin.getInstance().getDataFile().set(player.getUniqueId().toString(), null);
@@ -48,7 +49,7 @@ public class DataHandler {
 
 	public static String reason(String[] args) {
 		int n;
-		if(args.length >= 3) {
+		if(args.length >= 2) {
 			if(isInt(args[1].replaceAll("\\D", ""))) {
 				n = 2;
 			} else { n = 1; }
@@ -93,6 +94,10 @@ public class DataHandler {
 
 	public static void sendMessage(Player player, String message) {
 		player.sendMessage(colorize(message));
+	}
+
+	public static void sendConsole(String message) {
+		LimboPlugin.getInstance().getServer().getConsoleSender().sendMessage(colorize(message));
 	}
 
 	public static String colorize(String message) {

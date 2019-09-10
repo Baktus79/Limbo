@@ -19,6 +19,7 @@ import no.vestlandetmc.Limbo.handler.DataHandler;
 
 public class templimboCommand implements CommandExecutor {
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (!(sender instanceof Player)) {
@@ -65,7 +66,7 @@ public class templimboCommand implements CommandExecutor {
 
 		if(Config.VISIBLE) {
 			for (final Player p : Bukkit.getOnlinePlayers()) {
-				player.hidePlayer(LimboPlugin.getInstance(), p);
+				player.hidePlayer(p);
 			}
 		}
 

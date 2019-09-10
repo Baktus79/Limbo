@@ -1,21 +1,74 @@
 name: Limbo
-version: 1.8
+version: ${project.version}
 authors: [Baktus_79]
 main: no.vestlandetmc.Limbo.LimboPlugin
-description: Puts a player in limbo.
+description: Banish a player to limbo.
 website: www.vestlandetmc.no
 prefix: Limbo
-api-version: 1.13
 commands:
   limbo:
     description: Place a player in limbo.
     usage: /limbo [player] (reason)
+    permission: limbo.limbo
+    permission-message: 
   templimbo:
     description: Place a player temporary in limbo.
     usage: /templimbo [player] [time] (reason)
+    permission: limbo.templimbo
+    permission-message: 
   unlimbo:
     description: Remove a player from limbo.
     usage: /unlimbo [player]
+    permission: limbo.unlimbo
+    permission-message: 
   limbolist:
     description: List players that are placed in limbo.
     usage: /limbolist
+    permission: limbo.limbolist
+    permission-message: 
+permissions:
+  limbo.admin:
+    description: Give you all commands
+    default: op
+    children:
+      limbo.limbo: true
+      limbo.templimbo: true
+      limbo.unlimbo: true
+      limbo.limbolist: true
+      limbo.chatvisible: true
+      limbo.bypass: true
+      limbo.notify: true
+  limbo.moderator:
+    description: Common commands for moderators
+    default: op
+    children:
+      limbo.limbo: true
+      limbo.templimbo: true
+      limbo.unlimbo: true
+      limbo.limbolist: true
+      limbo.chatvisible: true
+      limbo.bypass: true
+      limbo.notify: true
+  limbo.limbo:
+    description: Allows limbo command
+    default: op
+  limbo.notify:
+    description: Be notified
+    default: op
+  limbo.templimbo:
+    description: Allows templimbo command
+    default: op
+  limbo.unlimbo:
+    description: Allows unlimbo command
+    default: op
+  limbo.limbolist:
+    description: Allows limbolist command
+    default: op
+  limbo.chatvisible:
+    description: See limbo chat
+    default: op
+  limbo.bypass:
+    description: Can not be banished
+    default: op
+    
+    

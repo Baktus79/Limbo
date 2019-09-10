@@ -21,6 +21,7 @@ public class unlimboCommand implements CommandExecutor {
 
 	File file;
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (!(sender instanceof Player)) {
@@ -45,7 +46,7 @@ public class unlimboCommand implements CommandExecutor {
 					if(player.isOnline()) {
 						final Player oPlayer = Bukkit.getPlayer(args[0]);
 						for (final Player onlinePlayers : Bukkit.getOnlinePlayers()) {
-							oPlayer.getPlayer().showPlayer(LimboPlugin.getInstance(), onlinePlayers);
+							oPlayer.getPlayer().showPlayer(onlinePlayers);
 						}
 					}
 					LimboPlugin.getInstance().getDataFile().set(player.getUniqueId().toString(), null);
