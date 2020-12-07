@@ -60,7 +60,7 @@ public class PlayerListener implements Listener {
 
 	}
 
-	@EventHandler(priority = EventPriority.HIGH)
+	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerChat(AsyncPlayerChatEvent e) {
 		if(Config.CHAT) {
 			final Player player = e.getPlayer();
