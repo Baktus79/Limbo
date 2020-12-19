@@ -1,6 +1,5 @@
 package no.vestlandetmc.Limbo.listener;
 
-import java.util.Iterator;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -11,7 +10,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
@@ -58,32 +56,6 @@ public class PlayerListener implements Listener {
 			}
 		}
 
-	}
-
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void onPlayerChat(AsyncPlayerChatEvent e) {
-		if(Config.CHAT) {
-			final Player player = e.getPlayer();
-
-			if(DataHandler.isLimbo(player)) {
-				e.setCancelled(true);
-				e.getRecipients().remove(player);
-				player.sendMessage(ChatColor.RED + "[Limbo] " + ChatColor.WHITE +  "<" + player.getDisplayName() + "> " + e.getMessage());
-				DataHandler.sendConsole("&c[Limbo] &f<" + player.getName() + "> " + e.getMessage());
-				for (final Player perm : Bukkit.getOnlinePlayers()) {
-					if(perm.hasPermission("limbo.chatvisible")) {
-						perm.sendMessage(ChatColor.RED + "[Limbo] " + ChatColor.WHITE +  "<" + player.getDisplayName() + "> " + e.getMessage());
-					}
-				}
-			}
-
-			for(final Iterator<Player> it = e.getRecipients().iterator(); it.hasNext();) {
-				final Player p = it.next();
-				if(DataHandler.isLimbo(p)) {
-					it.remove();
-				}
-			}
-		}
 	}
 
 	@EventHandler(priority = EventPriority.HIGH)

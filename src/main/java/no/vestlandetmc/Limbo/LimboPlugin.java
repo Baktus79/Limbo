@@ -17,6 +17,8 @@ import no.vestlandetmc.Limbo.config.Config;
 import no.vestlandetmc.Limbo.config.Messages;
 import no.vestlandetmc.Limbo.handler.DataHandler;
 import no.vestlandetmc.Limbo.handler.UpdateNotification;
+import no.vestlandetmc.Limbo.listener.ChatListener;
+import no.vestlandetmc.Limbo.listener.DeluxeChatListener;
 import no.vestlandetmc.Limbo.listener.PlayerListener;
 
 public class LimboPlugin extends JavaPlugin {
@@ -31,12 +33,23 @@ public class LimboPlugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		instance = this;
+		final String prefix = getDescription().getPrefix();
+
 		this.getCommand("limbo").setExecutor(new limboCommand());
 		this.getCommand("unlimbo").setExecutor(new unlimboCommand());
 		this.getCommand("limbolist").setExecutor(new limbolistCommand());
 		this.getCommand("templimbo").setExecutor(new templimboCommand());
 		this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
 		this.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> { DataHandler.checkTime(); }, 0L, 1200L);
+
+		if (getInstance().getServer().getPluginManager().getPlugin("DeluxeChat") != null) {
+			final String deluxeChat = getInstance().getServer().getPluginManager().getPlugin("DeluxeChat").getDescription().getFullName();
+
+			this.getServer().getPluginManager().registerEvents(new DeluxeChatListener(), this);
+			getServer().getConsoleSender().sendMessage("[" + prefix + "]" + " " + deluxeChat + " was found - Using features");
+		} else {
+			this.getServer().getPluginManager().registerEvents(new ChatListener(), this);
+		}
 
 		Messages.initialize();
 		Config.initialize();
