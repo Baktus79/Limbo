@@ -14,6 +14,7 @@ import me.clip.deluxechat.events.DeluxeChatEvent;
 import no.vestlandetmc.Limbo.config.Config;
 import no.vestlandetmc.Limbo.handler.DataHandler;
 
+@SuppressWarnings("deprecation")
 public class DeluxeChatListener implements Listener {
 
 	@EventHandler(priority = EventPriority.HIGH)
@@ -42,7 +43,6 @@ public class DeluxeChatListener implements Listener {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerChat(PlayerChatEvent e) {
 		if(Config.CHAT) {
