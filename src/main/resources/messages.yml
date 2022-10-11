@@ -8,10 +8,11 @@ helpCommand:
 limboList:
   listHeader: '&7-------------- [ &aPlayers in limbo ] &7--------------'
   noPlayersInLimbo: '&cNo players in Limbo!'
-  permanent: '&aPermanent'
-  temporary: 'Until &a%time%'
-  placedInLimbo: 'Placed in limbo:'
-  placedInLimboBy: '%player% was placed in &climbo &fby %bywhom%: &a%reason%'
+  permanent: '&a%player% &7>>> &aExpire: &fNever'
+  temporary: '&a%player% &7>>> &aExpire: &f%time%'
+  placedBy: '&aPlaced by: &f%bywhom%'
+  timePlaced: '&aTime: &f%time%'
+  reasonHover: '&aReason: &f%reason%'
 warningMessages:
   missingPermission: '&cYou do not have permission to use this command'
   playerIsNotOnline: '&cPlayer %player% is not online or not a valid name. Check for spelling errors!'
@@ -23,8 +24,11 @@ warningMessages:
   blacklistedCommand: '&cThis command can not be used when in limbo!'
 announce:
   placedInLimbo: '&a%player% &fhas been placed in Limbo by %bywhom%. Reason: &a%reason%'
+  placedInLimboSilence: '&8[Silence] %player% has been placed in Limbo by %bywhom%. Reason: %reason%'
   temporaryLimbo: '&a%player% &fhas been placed in Limbo by %bywhom% until &a%time%&f. Reason: &a%reason%'
+  temporaryLimboSilence: '&8[Silence] %player% has been placed in Limbo by %bywhom% until %time%. Reason: %reason%'
   releasedLimbo: '&a%player% &fhas been released from Limbo by %bywhom%.'
+  releasedLimboSilence: '&8[Silence] %player% has been released from Limbo by %bywhom%.'
   noReason: 'No reason'
 notifier:
   reload: '&2[Limbo] Config and language file has been reloaded!'
