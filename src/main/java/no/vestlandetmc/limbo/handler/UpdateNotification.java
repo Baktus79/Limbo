@@ -1,4 +1,4 @@
-package no.vestlandetmc.Limbo.handler;
+package no.vestlandetmc.limbo.handler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.net.URLConnection;
 
 import org.bukkit.scheduler.BukkitRunnable;
 
-import no.vestlandetmc.Limbo.LimboPlugin;
+import no.vestlandetmc.limbo.LimboPlugin;
 
 public abstract class UpdateNotification extends BukkitRunnable {
 

@@ -1,4 +1,4 @@
-package no.vestlandetmc.Limbo.config;
+package no.vestlandetmc.limbo.config;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.util.Set;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import no.vestlandetmc.Limbo.LimboPlugin;
+import no.vestlandetmc.limbo.LimboPlugin;
 
 public class ConfigHandler extends YamlConfiguration {
 

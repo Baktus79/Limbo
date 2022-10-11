@@ -1,4 +1,4 @@
-package no.vestlandetmc.Limbo.config;
+package no.vestlandetmc.limbo.config;
 
 public class Messages extends ConfigHandler {
 
@@ -17,8 +17,9 @@ public class Messages extends ConfigHandler {
 	NO_PLAYERS_LIMBO,
 	PERMANENT,
 	TEMPORARY,
-	PLACED_IN_LIMBO,
-	PLACED_IN_LIMBO_BY,
+	TIME_PLACED,
+	PLACED_BY,
+	REASON_HOVER,
 	MISSING_PERMISSION,
 	PLAYER_NOT_ONLINE,
 	PLAYER_BYPASS,
@@ -28,8 +29,11 @@ public class Messages extends ConfigHandler {
 	CORRECT_FORMAT,
 	BLACKLISTED_COMMANDS,
 	PLACED_IN_LIMBO_ANNOUNCE,
+	PLACED_IN_LIMBO_ANNOUNCE_SILENCE,
 	TEMPORARY_LIMBO,
+	TEMPORARY_LIMBO_SILENCE,
 	RELEASED_LIMBO,
+	RELEASED_LIMBO_SILENCE,
 	NO_REASON,
 	RELOAD;
 
@@ -45,8 +49,9 @@ public class Messages extends ConfigHandler {
 		NO_PLAYERS_LIMBO = getString("limboList.noPlayersInLimbo");
 		PERMANENT = getString("limboList.permanent");
 		TEMPORARY = getString("limboList.temporary");
-		PLACED_IN_LIMBO = getString("limboList.placedInLimbo");
-		PLACED_IN_LIMBO_BY = getString("limboList.placedInLimboBy");
+		TIME_PLACED = getString("limboList.timePlaced");
+		PLACED_BY = getString("limboList.placedBy");
+		REASON_HOVER = getString("limboList.reasonHover");
 		MISSING_PERMISSION = getString("warningMessages.missingPermission");
 		PLAYER_NOT_ONLINE = getString("warningMessages.playerIsNotOnline");
 		PLAYER_BYPASS = getString("warningMessages.playerBypass");
@@ -56,8 +61,11 @@ public class Messages extends ConfigHandler {
 		CORRECT_FORMAT = getString("warningMessages.correctFormat");
 		BLACKLISTED_COMMANDS = getString("warningMessages.blacklistedCommand");
 		PLACED_IN_LIMBO_ANNOUNCE = getString("announce.placedInLimbo");
+		PLACED_IN_LIMBO_ANNOUNCE_SILENCE = getString("announce.placedInLimboSilence");
 		TEMPORARY_LIMBO = getString("announce.temporaryLimbo");
+		TEMPORARY_LIMBO_SILENCE = getString("announce.temporaryLimboSilence");
 		RELEASED_LIMBO = getString("announce.releasedLimbo");
+		RELEASED_LIMBO_SILENCE = getString("announce.releasedLimboSilence");
 		NO_REASON = getString("announce.noReason");
 		RELOAD = getString("notifier.reload");
 	}
@@ -67,7 +75,11 @@ public class Messages extends ConfigHandler {
 	}
 
 	public static String placeholders(String message, String player, String bywhom, String time, String reason) {
-		final String converted = message.replaceAll("%player%", player).replaceAll("%bywhom%", bywhom).replaceAll("%reason%", reason).replaceAll("%time%", time);
+		final String converted = message.
+				replaceAll("%player%", player).
+				replaceAll("%bywhom%", bywhom).
+				replaceAll("%reason%", reason).
+				replaceAll("%time%", time);
 
 		return converted;
 
