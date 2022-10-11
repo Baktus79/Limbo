@@ -1,11 +1,10 @@
 name: Limbo
 version: ${project.version}
 authors: [Baktus_79]
-main: no.vestlandetmc.Limbo.LimboPlugin
+main: no.vestlandetmc.limbo.LimboPlugin
 description: Banish a player to limbo.
 website: www.vestlandetmc.no
 prefix: Limbo
-softdepend: [DeluxeChat]
 commands:
   limbo:
     description: Place a player in limbo.
@@ -16,17 +15,17 @@ commands:
     description: Place a player temporary in limbo.
     usage: /templimbo [player] [time] (reason)
     permission: limbo.templimbo
-    permission-message: 
+    permission-message: §cSorry, but you do not have permissions to do that.
   unlimbo:
     description: Remove a player from limbo.
     usage: /unlimbo [player]
     permission: limbo.unlimbo
-    permission-message: 
+    permission-message: §cSorry, but you do not have permissions to do that.
   limbolist:
     description: List players that are placed in limbo.
     usage: /limbolist
     permission: limbo.limbolist
-    permission-message: 
+    permission-message: §cSorry, but you do not have permissions to do that.
 permissions:
   limbo.admin:
     description: Give you all commands
