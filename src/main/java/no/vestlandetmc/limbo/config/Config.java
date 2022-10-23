@@ -17,7 +17,8 @@ public class Config extends ConfigHandler {
 	PASSWORD,
 	DATABASE,
 	PREFIX,
-	SQLTYPE;
+	SQLTYPE,
+	DISCORD_CHANNEL;
 
 	public static int
 	PORT,
@@ -32,8 +33,7 @@ public class Config extends ConfigHandler {
 	CHAT,
 	VISIBLE,
 	ENABLE_SSL,
-	MYSQL_ENABLED,
-	PROXY;
+	DISCORDSRV_ENABLED;
 
 	private void onLoad() {
 
@@ -43,7 +43,9 @@ public class Config extends ConfigHandler {
 		ITEM_PICKUP = getBoolean("WorldSettings.DisableItemPickup");
 		CHAT = getBoolean("WorldSettings.DisableChat");
 		VISIBLE = getBoolean("WorldSettings.DisableVisible");
-		PROXY = getBoolean("settings.proxy");
+
+		DISCORDSRV_ENABLED = getBoolean("discordsrv.enabled");
+		DISCORD_CHANNEL = getString("discordsrv.textchannel");
 
 		SQLTYPE = getString("database.engine");
 		HOST = getString("database.host");

@@ -5,6 +5,7 @@ main: no.vestlandetmc.limbo.LimboPlugin
 description: Banish a player to limbo.
 website: www.vestlandetmc.no
 prefix: Limbo
+softdepend: [DiscordSRV]
 commands:
   limbo:
     description: Place a player in limbo.

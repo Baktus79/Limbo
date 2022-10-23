@@ -16,6 +16,7 @@ import no.vestlandetmc.limbo.config.Config;
 import no.vestlandetmc.limbo.config.Messages;
 import no.vestlandetmc.limbo.database.SqlPool;
 import no.vestlandetmc.limbo.handler.DataHandler;
+import no.vestlandetmc.limbo.handler.DiscordManager;
 import no.vestlandetmc.limbo.handler.MessageHandler;
 import no.vestlandetmc.limbo.handler.UpdateNotification;
 import no.vestlandetmc.limbo.listener.ChatListener;
@@ -45,6 +46,15 @@ public class LimboPlugin extends JavaPlugin {
 			getLogger().warning("Please restart the server for the libraries to take effect...");
 			Bukkit.getPluginManager().disablePlugin(this);
 			return;
+		}
+
+		if(getServer().getPluginManager().getPlugin("DiscordSRV") != null) {
+			DiscordManager.discordEnabled();
+			MessageHandler.sendConsole("[" + getDescription().getPrefix() + "] Successfully hooked up to DiscordSRV v"
+					+ getServer().getPluginManager().getPlugin("DiscordSRV").getDescription().getVersion());
+
+			if(!Config.DISCORDSRV_ENABLED)
+				MessageHandler.sendConsole("[" + getDescription().getPrefix() + "] DiscordSRV is currently disabled in the config file.");
 		}
 
 		try { new SqlPool().initialize(); }

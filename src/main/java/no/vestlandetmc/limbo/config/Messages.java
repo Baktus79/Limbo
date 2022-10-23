@@ -34,6 +34,8 @@ public class Messages extends ConfigHandler {
 	TEMPORARY_LIMBO_SILENCE,
 	RELEASED_LIMBO,
 	RELEASED_LIMBO_SILENCE,
+	PERMANENT_LIMBO_DISCORD,
+	TEMPORARY_LIMBO_DISCORD,
 	NO_REASON,
 	RELOAD;
 
@@ -66,6 +68,8 @@ public class Messages extends ConfigHandler {
 		TEMPORARY_LIMBO_SILENCE = getString("announce.temporaryLimboSilence");
 		RELEASED_LIMBO = getString("announce.releasedLimbo");
 		RELEASED_LIMBO_SILENCE = getString("announce.releasedLimboSilence");
+		PERMANENT_LIMBO_DISCORD = getString("discord.permanent-limbo");
+		TEMPORARY_LIMBO_DISCORD = getString("discord.temporary-limbo");
 		NO_REASON = getString("announce.noReason");
 		RELOAD = getString("notifier.reload");
 	}
@@ -75,14 +79,29 @@ public class Messages extends ConfigHandler {
 	}
 
 	public static String placeholders(String message, String player, String bywhom, String time, String reason) {
-		final String converted = message.
-				replaceAll("%player%", player).
-				replaceAll("%bywhom%", bywhom).
-				replaceAll("%reason%", reason).
-				replaceAll("%time%", time);
+		return placeholders(message, player, bywhom, time, reason, false);
+	}
+
+	public static String placeholders(String message, String player, String bywhom, String time, String reason, boolean discord) {
+		String converted = "";
+
+		if(discord) {
+			converted = message.
+					replaceAll("%player%", player.replace("_", "\\_")).
+					replaceAll("%bywhom%", bywhom.replace("_", "\\_")).
+					replaceAll("%reason%", reason).
+					replaceAll("%time%", time);
+		}
+
+		else {
+			converted = message.
+					replaceAll("%player%", player).
+					replaceAll("%bywhom%", bywhom).
+					replaceAll("%reason%", reason).
+					replaceAll("%time%", time);
+		}
 
 		return converted;
-
 	}
 
 }

@@ -11,6 +11,9 @@ WorldSettings:
   DisableItemPickup: true
   DisableChat: true
   DisableVisible: true
+discordsrv:
+  enabled: false
+  textchannel: ''
 database:
   engine: sqlite
   host: localhost

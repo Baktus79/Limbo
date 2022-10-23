@@ -32,3 +32,6 @@ announce:
   noReason: 'No reason'
 notifier:
   reload: '&2[Limbo] Config and language file has been reloaded!'
+discord:
+  permanent-limbo: '%player% has been placed in Limbo by %bywhom%. Reason: %reason%'
+  temporary-limbo: '%player% has been placed in Limbo by %bywhom% until %time%. Reason: %reason%'

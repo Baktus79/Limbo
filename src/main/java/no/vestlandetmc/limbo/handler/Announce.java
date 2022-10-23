@@ -14,6 +14,7 @@ public class Announce {
 		for (final Player p : Bukkit.getOnlinePlayers()) {
 			if(p.hasPermission("limbo.notify") && !silence) {
 				MessageHandler.sendMessage(p, Messages.placeholders(Messages.PLACED_IN_LIMBO_ANNOUNCE, player.getName(), punisher.getName(), null, reason));
+				DiscordManager.sendLimbo(Messages.placeholders(Messages.PLACED_IN_LIMBO_ANNOUNCE, player.getName(), punisher.getName(), null, reason, true));
 			}
 
 			if(p.hasPermission("limbo.notify.silence") && silence) {
@@ -27,6 +28,7 @@ public class Announce {
 		for (final Player p : Bukkit.getOnlinePlayers()) {
 			if(p.hasPermission("limbo.notify") && !silence) {
 				MessageHandler.sendMessage(p, Messages.placeholders(Messages.TEMPORARY_LIMBO, player.getName(), punisher.getName(), timeFormat.format(time), reason));
+				DiscordManager.sendLimbo(Messages.placeholders(Messages.TEMPORARY_LIMBO, player.getName(), punisher.getName(), timeFormat.format(time), reason));
 			}
 
 			if(p.hasPermission("limbo.notify.silence") && silence) {
