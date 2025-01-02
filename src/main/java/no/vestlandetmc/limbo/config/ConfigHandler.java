@@ -1,5 +1,9 @@
 package no.vestlandetmc.limbo.config;
 
+import no.vestlandetmc.limbo.LimboPlugin;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,15 +15,10 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
-
-import no.vestlandetmc.limbo.LimboPlugin;
-
 public class ConfigHandler extends YamlConfiguration {
 
 	private final File file;
-	private YamlConfiguration defaults;
+	private final YamlConfiguration defaults;
 	private String pathPrefix;
 
 	public ConfigHandler(String fileName) {
@@ -27,7 +26,7 @@ public class ConfigHandler extends YamlConfiguration {
 	}
 
 	public ConfigHandler(String fileName, boolean useDefaults) {
-		if(useDefaults) {
+		if (useDefaults) {
 			this.defaults = YamlConfiguration.loadConfiguration(new InputStreamReader(ConfigHandler.class.getResourceAsStream("/" + fileName), StandardCharsets.UTF_8));
 		} else {
 			this.defaults = null;
@@ -109,7 +108,7 @@ public class ConfigHandler extends YamlConfiguration {
 	}
 
 	private File extract(String path) {
-		final JavaPlugin i = LimboPlugin.getInstance();
+		final JavaPlugin i = LimboPlugin.getPlugin();
 		final File file = new File(i.getDataFolder(), path);
 
 		if (file.exists())
@@ -130,7 +129,7 @@ public class ConfigHandler extends YamlConfiguration {
 
 	private File createFileAndDirectory(String path) {
 
-		final File datafolder = LimboPlugin.getInstance().getDataFolder();
+		final File datafolder = LimboPlugin.getPlugin().getDataFolder();
 		final int lastIndex = path.lastIndexOf('/');
 		final File directory = new File(datafolder, path.substring(0, lastIndex >= 0 ? lastIndex : 0));
 

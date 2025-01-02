@@ -1,5 +1,5 @@
 name: Limbo
-version: ${project.version}
+version: ${version}
 authors: [Baktus_79]
 main: no.vestlandetmc.limbo.LimboPlugin
 description: Banish a player to limbo.

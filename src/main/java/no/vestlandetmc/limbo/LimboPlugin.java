@@ -1,13 +1,6 @@
 package no.vestlandetmc.limbo;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.HashMap;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.plugin.java.JavaPlugin;
-
+import lombok.Getter;
 import no.vestlandetmc.limbo.commands.limboCommand;
 import no.vestlandetmc.limbo.commands.limbolistCommand;
 import no.vestlandetmc.limbo.commands.templimboCommand;
@@ -15,58 +8,78 @@ import no.vestlandetmc.limbo.commands.unlimboCommand;
 import no.vestlandetmc.limbo.config.Config;
 import no.vestlandetmc.limbo.config.Messages;
 import no.vestlandetmc.limbo.database.SqlPool;
-import no.vestlandetmc.limbo.handler.DataHandler;
-import no.vestlandetmc.limbo.handler.DiscordManager;
-import no.vestlandetmc.limbo.handler.MessageHandler;
-import no.vestlandetmc.limbo.handler.UpdateNotification;
+import no.vestlandetmc.limbo.handler.*;
 import no.vestlandetmc.limbo.listener.ChatListener;
 import no.vestlandetmc.limbo.listener.PlayerListener;
-import no.vestlandetmc.limbo.utils.DownloadLibs;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class LimboPlugin extends JavaPlugin {
 
-	private static LimboPlugin instance;
-	private boolean libraryExist = true;
+	@Getter
+	private static LimboPlugin plugin;
+	private final boolean libraryExist = true;
+	private final List<Library> libraries = new ArrayList<>();
 
-	public static LimboPlugin getInstance() {
-		return instance;
+	@Override
+	public void onLoad() {
+		libraries.add(new Library("https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/3.5.1/mariadb-java-client-3.5.1.jar",
+				"mariadb-java-client-3.5.1.jar", "org.mariadb.jdbc", this));
+
+		libraries.add(new Library("https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.33/mysql-connector-java-8.0.33.jar",
+				"mysql-connector-java-8.0.33.jar", "com.mysql.cj.jdbc.Driver", this));
+
+		libraries.add(new Library("https://repo1.maven.org/maven2/com/zaxxer/HikariCP/6.2.1/HikariCP-6.2.1.jar",
+				"HikariCP-6.2.1.jar", "com.zaxxer.hikari.HikariConfig", this));
+
+		libraries.add(new Library("https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.47.1.0/sqlite-jdbc-3.47.1.0.jar",
+				"sqlite-jdbc-3.47.1.0.jar", "org.sqlite.JDBC", this));
 	}
 
 	@Override
 	public void onEnable() {
-		instance = this;
-
-		try { downloadLibs(); }
-		catch (final IOException e) { e.printStackTrace(); }
+		plugin = this;
+		libraries.forEach(Library::load);
 
 		Messages.initialize();
 		Config.initialize();
 
-		if(!this.libraryExist) {
+		if (!this.libraryExist) {
 			getLogger().warning("Please restart the server for the libraries to take effect...");
 			Bukkit.getPluginManager().disablePlugin(this);
 			return;
 		}
 
-		if(getServer().getPluginManager().getPlugin("DiscordSRV") != null) {
+		if (getServer().getPluginManager().getPlugin("DiscordSRV") != null) {
 			DiscordManager.discordEnabled();
 			MessageHandler.sendConsole("[" + getDescription().getPrefix() + "] Successfully hooked up to DiscordSRV v"
 					+ getServer().getPluginManager().getPlugin("DiscordSRV").getDescription().getVersion());
 
-			if(!Config.DISCORDSRV_ENABLED)
+			if (!Config.DISCORDSRV_ENABLED)
 				MessageHandler.sendConsole("[" + getDescription().getPrefix() + "] DiscordSRV is currently disabled in the config file.");
 		}
 
-		try { new SqlPool().initialize(); }
-		catch (final SQLException e) { e.printStackTrace(); }
+		try {
+			new SqlPool().initialize();
+		} catch (final SQLException e) {
+			getLogger().severe(e.getMessage());
+		}
 
-		this.getCommand("limbo").setExecutor(new limboCommand());
-		this.getCommand("unlimbo").setExecutor(new unlimboCommand());
-		this.getCommand("limbolist").setExecutor(new limbolistCommand());
-		this.getCommand("templimbo").setExecutor(new templimboCommand());
+		Objects.requireNonNull(this.getCommand("limbo")).setExecutor(new limboCommand());
+		Objects.requireNonNull(this.getCommand("unlimbo")).setExecutor(new unlimboCommand());
+		Objects.requireNonNull(this.getCommand("limbolist")).setExecutor(new limbolistCommand());
+		Objects.requireNonNull(this.getCommand("templimbo")).setExecutor(new templimboCommand());
 		this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
-		this.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> { new DataHandler().isExpired(); }, 0L, 60 * 20L);
 		this.getServer().getPluginManager().registerEvents(new ChatListener(), this);
+		this.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
+			new DataHandler().isExpired();
+		}, 0L, 60 * 20L);
 
 		new UpdateNotification(68055) {
 
@@ -84,14 +97,16 @@ public class LimboPlugin extends JavaPlugin {
 	public void onDisable() {
 		getServer().getScheduler().cancelTasks(this);
 
-		if(!this.libraryExist) { return; }
+		if (!this.libraryExist) {
+			return;
+		}
 
 		try {
-			if(!SqlPool.getDataSource().isClosed()) {
+			if (!SqlPool.getDataSource().isClosed()) {
 				SqlPool.getDataSource().close();
 			}
 		} catch (final SQLException e) {
-			e.printStackTrace();
+			getLogger().severe(e.getMessage());
 		}
 	}
 
@@ -99,26 +114,5 @@ public class LimboPlugin extends JavaPlugin {
 		Messages.initialize();
 		Config.initialize();
 
-	}
-
-	private void downloadLibs() throws IOException {
-		final HashMap<String, String> libs = new HashMap<>();
-
-		libs.put("mariadb-java-client-3.0.4.jar", "https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/3.0.4/mariadb-java-client-3.0.4.jar");
-		libs.put("mysql-connector-java-8.0.29.jar", "https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.29/mysql-connector-java-8.0.29.jar");
-		libs.put("HikariCP-5.0.1.jar", "https://repo1.maven.org/maven2/com/zaxxer/HikariCP/5.0.1/HikariCP-5.0.1.jar");
-		libs.put("sqlite-jdbc-3.36.0.3.jar", "https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.36.0.3/sqlite-jdbc-3.36.0.3.jar");
-
-		for(final String filename : libs.keySet()) {
-			final DownloadLibs dl = new DownloadLibs(filename);
-			final String url = libs.get(filename);
-
-			if(!dl.exist()) {
-				dl.url(url);
-				this.libraryExist = false;
-
-				MessageHandler.sendConsole("[" + getDescription().getPrefix() + "] Library " + filename + " was downloaded...");
-			}
-		}
 	}
 }

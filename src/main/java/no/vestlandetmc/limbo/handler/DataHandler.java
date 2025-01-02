@@ -1,23 +1,22 @@
 package no.vestlandetmc.limbo.handler;
 
+import no.vestlandetmc.limbo.LimboPlugin;
+import no.vestlandetmc.limbo.config.Messages;
+import no.vestlandetmc.limbo.database.SQLHandler;
+import no.vestlandetmc.limbo.obj.CachePlayer;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-
-import no.vestlandetmc.limbo.LimboPlugin;
-import no.vestlandetmc.limbo.config.Messages;
-import no.vestlandetmc.limbo.database.SQLHandler;
-import no.vestlandetmc.limbo.obj.CachePlayer;
-
 public class DataHandler {
 
 	private final SQLHandler sql = new SQLHandler();
-	private static HashMap<UUID, CachePlayer> LIMBO_CACHE = new HashMap<>();
+	private static final HashMap<UUID, CachePlayer> LIMBO_CACHE = new HashMap<>();
 
 	public DataHandler() {
 
@@ -39,10 +38,19 @@ public class DataHandler {
 
 	public void isLimbo(UUID uuid, Callback<Boolean> callback) {
 		final Runnable task = () -> {
-			if(LIMBO_CACHE.containsKey(uuid)) { callback.execute(true); return; }
+			if (LIMBO_CACHE.containsKey(uuid)) {
+				callback.execute(true);
+				return;
+			}
 
-			try { if(sql.ifLimbo(uuid)) { callback.execute(true); return; }
-			} catch (final SQLException e) { e.printStackTrace(); }
+			try {
+				if (sql.ifLimbo(uuid)) {
+					callback.execute(true);
+					return;
+				}
+			} catch (final SQLException e) {
+				e.printStackTrace();
+			}
 
 			callback.execute(false);
 		};
@@ -59,21 +67,21 @@ public class DataHandler {
 	}
 
 	public void isExpired() {
-		if(!LIMBO_CACHE.isEmpty()) {
-			for(final Entry<UUID, CachePlayer> ce : LIMBO_CACHE.entrySet()) {
+		if (!LIMBO_CACHE.isEmpty()) {
+			for (final Entry<UUID, CachePlayer> ce : LIMBO_CACHE.entrySet()) {
 				final UUID uuid = ce.getKey();
 				final CachePlayer cache = ce.getValue();
 				final Player player = Bukkit.getPlayer(uuid);
 				final long current = System.currentTimeMillis();
 
-				if(player == null) {
+				if (player == null) {
 					removePlayer(uuid);
 					return;
 				}
 
-				if(current >= cache.getExpire() && cache.getExpire() != -1) {
+				if (current >= cache.getExpire() && cache.getExpire() != -1) {
 					for (final Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-						player.getPlayer().showPlayer(LimboPlugin.getInstance(), onlinePlayer);
+						player.getPlayer().showPlayer(LimboPlugin.getPlugin(), onlinePlayer);
 					}
 
 					final Runnable task = () -> {
@@ -92,28 +100,36 @@ public class DataHandler {
 	}
 
 	public boolean removePlayer(UUID uuid) {
-		if(LIMBO_CACHE.containsKey(uuid)) {
+		if (LIMBO_CACHE.containsKey(uuid)) {
 			LIMBO_CACHE.remove(uuid);
 			return true;
-		} else { return false; }
+		} else {
+			return false;
+		}
 	}
 
 	public void getDBPlayer(UUID uuid, Callback<Boolean> callback) {
 		final Runnable task = () -> {
 
-			if(!LIMBO_CACHE.containsKey(uuid)) {
+			if (!LIMBO_CACHE.containsKey(uuid)) {
 				CachePlayer cache = null;
 
-				try { cache = sql.getPlayer(uuid); }
-				catch (final SQLException e) { e.printStackTrace();	}
+				try {
+					cache = sql.getPlayer(uuid);
+				} catch (final SQLException e) {
+					e.printStackTrace();
+				}
 
-				if(cache == null) { callback.execute(false); }
-				else {
+				if (cache == null) {
+					callback.execute(false);
+				} else {
 					LIMBO_CACHE.put(uuid, cache);
 					callback.execute(true);
 				}
 
-			} else { callback.execute(false); }
+			} else {
+				callback.execute(false);
+			}
 
 		};
 
@@ -121,29 +137,41 @@ public class DataHandler {
 	}
 
 	public boolean getDBPlayer(UUID uuid) {
-		if(!LIMBO_CACHE.containsKey(uuid)) {
+		if (!LIMBO_CACHE.containsKey(uuid)) {
 			CachePlayer cache = null;
 
-			try { cache = sql.getPlayer(uuid); }
-			catch (final SQLException e) { e.printStackTrace();	}
+			try {
+				cache = sql.getPlayer(uuid);
+			} catch (final SQLException e) {
+				e.printStackTrace();
+			}
 
-			if(cache == null) { return false; }
+			if (cache == null) {
+				return false;
+			}
 
 			LIMBO_CACHE.put(uuid, cache);
 
 			return true;
-		} else { return false; }
+		} else {
+			return false;
+		}
 	}
 
 	public void setPlayer(UUID uuid, UUID staffUUID, long timestamp, long expire, String reason) {
 		final CachePlayer cache = new CachePlayer(uuid, staffUUID, timestamp, expire, reason);
 		final Player player = Bukkit.getPlayer(uuid);
 
-		if(player != null) { LIMBO_CACHE.put(uuid, cache); }
+		if (player != null) {
+			LIMBO_CACHE.put(uuid, cache);
+		}
 
 		final Runnable task = () -> {
-			try { sql.setUser(cache); }
-			catch (final SQLException e) { e.printStackTrace(); }
+			try {
+				sql.setUser(cache);
+			} catch (final SQLException e) {
+				e.printStackTrace();
+			}
 		};
 
 		runAsync(task);
@@ -151,13 +179,18 @@ public class DataHandler {
 
 	public static String reason(List<String> args, boolean temp) {
 		int n;
-		if(args.size() >= 2) {
-			if(temp) { n = 2; }
-			else { n = 1; }
+		if (args.size() >= 2) {
+			if (temp) {
+				n = 2;
+			} else {
+				n = 1;
+			}
 
 			final StringBuilder message = new StringBuilder();
-			for(int i = n; i < args.size(); i++){
-				if(!args.get(i).equals("-s")) {	message.append(args.get(i) + " "); }
+			for (int i = n; i < args.size(); i++) {
+				if (!args.get(i).equals("-s")) {
+					message.append(args.get(i) + " ");
+				}
 			}
 			return message.toString();
 		}
@@ -180,25 +213,25 @@ public class DataHandler {
 		long releaseTime = 0L;
 
 		if (name.equalsIgnoreCase("months") || name.equalsIgnoreCase("month") || name.equalsIgnoreCase("mon")) {
-			releaseTime = nr * 60 * 60 * 24 * 7 * 4 * 1000;
+			releaseTime = (long) nr * 60 * 60 * 24 * 7 * 4 * 1000;
 		} else if (name.equalsIgnoreCase("weeks") || name.equalsIgnoreCase("week") || name.equalsIgnoreCase("w")) {
-			releaseTime = nr * 60 * 60 * 24 * 7 * 1000;
+			releaseTime = (long) nr * 60 * 60 * 24 * 7 * 1000;
 		} else if (name.equalsIgnoreCase("days") || name.equalsIgnoreCase("day") || name.equalsIgnoreCase("d")) {
-			releaseTime = nr * 60 * 60 * 24 * 1000;
+			releaseTime = (long) nr * 60 * 60 * 24 * 1000;
 		} else if (name.equalsIgnoreCase("hours") || name.equalsIgnoreCase("hour") || name.equalsIgnoreCase("h")) {
-			releaseTime = nr * 60 * 60 * 1000;
+			releaseTime = (long) nr * 60 * 60 * 1000;
 		} else if (name.equalsIgnoreCase("minutes") || name.equalsIgnoreCase("minute") || name.equalsIgnoreCase("min") || name.equalsIgnoreCase("m")) {
-			releaseTime = nr * 60 * 1000;
+			releaseTime = (long) nr * 60 * 1000;
 		}
 
 		return releaseTime;
 	}
 
 	public void runAsync(Runnable task) {
-		Bukkit.getScheduler().runTaskAsynchronously(LimboPlugin.getInstance(), task);
+		Bukkit.getScheduler().runTaskAsynchronously(LimboPlugin.getPlugin(), task);
 	}
 
 	public void runSync(Runnable task) {
-		Bukkit.getScheduler().runTask(LimboPlugin.getInstance(), task);
+		Bukkit.getScheduler().runTask(LimboPlugin.getPlugin(), task);
 	}
 }

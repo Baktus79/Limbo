@@ -1,14 +1,13 @@
 package no.vestlandetmc.limbo.handler;
 
+import no.vestlandetmc.limbo.LimboPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
-
-import org.bukkit.scheduler.BukkitRunnable;
-
-import no.vestlandetmc.limbo.LimboPlugin;
 
 public abstract class UpdateNotification extends BukkitRunnable {
 
@@ -26,15 +25,15 @@ public abstract class UpdateNotification extends BukkitRunnable {
 			final URL url = new URL("https://api.spigotmc.org/legacy/update.php?resource=" + projectId);
 			final URLConnection con = url.openConnection();
 
-			try(BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+			try (BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
 				latestVersion = r.readLine();
 			}
 
-			if(isUpdateAvailable()) {
+			if (isUpdateAvailable()) {
 				onUpdateAvailable();
 			}
 
-		} catch(final IOException ex) {
+		} catch (final IOException ex) {
 			ex.getStackTrace();
 		}
 	}
@@ -42,7 +41,7 @@ public abstract class UpdateNotification extends BukkitRunnable {
 	public abstract void onUpdateAvailable();
 
 	public static boolean isUpdateAvailable() {
-		return !latestVersion.equals(LimboPlugin.getInstance().getDescription().getVersion());
+		return !latestVersion.equals(LimboPlugin.getPlugin().getDescription().getVersion());
 	}
 
 	public static int getProjectId() {
@@ -54,6 +53,6 @@ public abstract class UpdateNotification extends BukkitRunnable {
 	}
 
 	public static String getCurrentVersion() {
-		return LimboPlugin.getInstance().getDescription().getVersion();
+		return LimboPlugin.getPlugin().getDescription().getVersion();
 	}
 }

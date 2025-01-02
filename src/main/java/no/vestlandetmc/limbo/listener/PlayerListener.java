@@ -1,8 +1,13 @@
 package no.vestlandetmc.limbo.listener;
 
-import java.util.Map.Entry;
-import java.util.UUID;
-
+import no.vestlandetmc.limbo.LimboPlugin;
+import no.vestlandetmc.limbo.config.Config;
+import no.vestlandetmc.limbo.config.Messages;
+import no.vestlandetmc.limbo.handler.Callback;
+import no.vestlandetmc.limbo.handler.DataHandler;
+import no.vestlandetmc.limbo.handler.MessageHandler;
+import no.vestlandetmc.limbo.handler.UpdateNotification;
+import no.vestlandetmc.limbo.obj.CachePlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -16,14 +21,8 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import no.vestlandetmc.limbo.LimboPlugin;
-import no.vestlandetmc.limbo.config.Config;
-import no.vestlandetmc.limbo.config.Messages;
-import no.vestlandetmc.limbo.handler.Callback;
-import no.vestlandetmc.limbo.handler.DataHandler;
-import no.vestlandetmc.limbo.handler.MessageHandler;
-import no.vestlandetmc.limbo.handler.UpdateNotification;
-import no.vestlandetmc.limbo.obj.CachePlayer;
+import java.util.Map.Entry;
+import java.util.UUID;
 
 public class PlayerListener implements Listener {
 
@@ -35,17 +34,17 @@ public class PlayerListener implements Listener {
 
 		final Callback<Boolean> callback = b -> {
 			final Runnable task = () -> {
-				if(b) {
-					if(Config.VISIBLE) {
+				if (b) {
+					if (Config.VISIBLE) {
 						for (final Player limboP : Bukkit.getOnlinePlayers()) {
-							player.hidePlayer(LimboPlugin.getInstance() ,limboP);
+							player.hidePlayer(LimboPlugin.getPlugin(), limboP);
 						}
 					}
 				}
 
-				for(final Entry<UUID, CachePlayer> lp : this.data.getAllPlayers().entrySet()) {
+				for (final Entry<UUID, CachePlayer> lp : this.data.getAllPlayers().entrySet()) {
 					final Player playerInLimbo = Bukkit.getPlayer(lp.getValue().getUniqueId());
-					playerInLimbo.getPlayer().hidePlayer(LimboPlugin.getInstance() ,player);
+					playerInLimbo.getPlayer().hidePlayer(LimboPlugin.getPlugin(), player);
 				}
 			};
 
@@ -54,8 +53,8 @@ public class PlayerListener implements Listener {
 
 		this.data.getDBPlayer(player.getUniqueId(), callback);
 
-		if(player.isOp()) {
-			if(UpdateNotification.isUpdateAvailable()) {
+		if (player.isOp()) {
+			if (UpdateNotification.isUpdateAvailable()) {
 				player.sendMessage(ChatColor.GREEN + "------------------------------------");
 				player.sendMessage(ChatColor.GREEN + "Limbo is outdated. Update is available!");
 				player.sendMessage(ChatColor.GREEN + "Your version is " + ChatColor.BOLD + UpdateNotification.getCurrentVersion() + ChatColor.GREEN + " and can be updated to version " + ChatColor.BOLD + UpdateNotification.getLatestVersion());
@@ -71,34 +70,40 @@ public class PlayerListener implements Listener {
 		this.data.removePlayer(e.getPlayer().getUniqueId());
 	}
 
-	@EventHandler(priority = EventPriority.HIGH)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockBreak(BlockBreakEvent e) {
 		final Player player = e.getPlayer();
-		if(player.hasPermission("limbo.bypass")) { return; }
+		if (player.hasPermission("limbo.bypass")) {
+			return;
+		}
 
-		if(this.data.isLimbo(player.getUniqueId())) {
+		if (this.data.isLimbo(player.getUniqueId())) {
 			e.setCancelled(Config.BLOCK_BREAK);
 		}
 	}
 
-	@EventHandler(priority = EventPriority.HIGH)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onBlockPlace(BlockPlaceEvent e) {
 		final Player player = e.getPlayer();
-		if(player.hasPermission("limbo.bypass")) { return; }
+		if (player.hasPermission("limbo.bypass")) {
+			return;
+		}
 
-		if(this.data.isLimbo(player.getUniqueId())) {
+		if (this.data.isLimbo(player.getUniqueId())) {
 			e.setCancelled(Config.BLOCK_PLACE);
 		}
 	}
 
-	@EventHandler(priority = EventPriority.HIGH)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onCommand(PlayerCommandPreprocessEvent e) {
 		final Player player = e.getPlayer();
-		if(player.hasPermission("limbo.bypass")) { return; }
+		if (player.hasPermission("limbo.bypass")) {
+			return;
+		}
 
-		if(this.data.isLimbo(player.getUniqueId())) {
-			for(int i = 0; i < Config.BLACKLISTED_COMMANDS.size(); i++) {
-				if(e.getMessage().startsWith("/" + Config.BLACKLISTED_COMMANDS.get(i))) {
+		if (this.data.isLimbo(player.getUniqueId())) {
+			for (int i = 0; i < Config.BLACKLISTED_COMMANDS.size(); i++) {
+				if (e.getMessage().startsWith("/" + Config.BLACKLISTED_COMMANDS.get(i))) {
 					e.setCancelled(true);
 					MessageHandler.sendMessage(player, Messages.placeholders(Messages.BLACKLISTED_COMMANDS, player.getName(), null, null, null));
 					return;
@@ -107,12 +112,13 @@ public class PlayerListener implements Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPickup(EntityPickupItemEvent e) {
-		if(e.getEntity() instanceof Player) {
-			final Player player = (Player) e.getEntity();
-			if(player.hasPermission("limbo.bypass")) { return; }
-			if(this.data.isLimbo(player.getUniqueId())) {
+		if (e.getEntity() instanceof Player player) {
+			if (player.hasPermission("limbo.bypass")) {
+				return;
+			}
+			if (this.data.isLimbo(player.getUniqueId())) {
 				e.setCancelled(Config.ITEM_PICKUP);
 			}
 		}
