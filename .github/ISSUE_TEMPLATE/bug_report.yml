@@ -1,0 +1,58 @@
+name: Bug Report
+description: Create a report to help us improve.
+labels: bug report
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This page is designed to help us resolve plugin issues. Please provide as much 
+        detail as possible to ensure we understand the problem clearly. If you have
+        multiple issues, please submit a separate report for each one.
+  - type: textarea
+    id: description-of-issue
+    attributes:
+      label: Description of Issue
+      description: |
+        Please provide a clear and concise description of your issue.
+    validations:
+      required: true
+  - type: textarea
+    id: version
+    attributes:
+      label: Version Information
+      description: Please specify the version of the plugin.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: console-errors
+    attributes:
+      label: Errors
+      description: If the error logs are too large, consider sharing them via a Pastebin link or similar service.
+      placeholder: Paste any errors you have in here.
+      render: shell
+  - type: textarea
+    id: config-sections
+    attributes:
+      label: Relevant Config Sections
+      description: Please avoid pasting entire configuration files or sensitive data.
+      placeholder: Paste any relevant config sections in here.
+      render: yaml
+  - type: input
+    id: server-plugins
+    attributes:
+      label: Relevant Plugins
+      description: List any related plugins along with their versions.
+      placeholder: Vault 1.7.3
+  - type: checkboxes
+    id: agreement-section
+    attributes:
+      label: Agreements
+      description: Please agree to the following.
+      options:
+        - label: I confirm that my server is compatible with the plugin.
+          required: true
+        - label: I verify that the plugin is up to date at the time of this report.
+          required: true
+        - label: I have searched GitHub and consulted other resources before submitting this report.
+          required: true
