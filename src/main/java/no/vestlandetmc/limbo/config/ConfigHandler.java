@@ -1,8 +1,10 @@
 package no.vestlandetmc.limbo.config;
 
+import lombok.Setter;
 import no.vestlandetmc.limbo.LimboPlugin;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,7 +12,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,6 +20,8 @@ public class ConfigHandler extends YamlConfiguration {
 
 	private final File file;
 	private final YamlConfiguration defaults;
+
+	@Setter
 	private String pathPrefix;
 
 	public ConfigHandler(String fileName) {
@@ -26,127 +29,94 @@ public class ConfigHandler extends YamlConfiguration {
 	}
 
 	public ConfigHandler(String fileName, boolean useDefaults) {
+		JavaPlugin plugin = LimboPlugin.getPlugin();
+		this.file = new File(plugin.getDataFolder(), fileName);
+
 		if (useDefaults) {
-			this.defaults = YamlConfiguration.loadConfiguration(new InputStreamReader(ConfigHandler.class.getResourceAsStream("/" + fileName), StandardCharsets.UTF_8));
+			try (InputStream defaultStream = plugin.getResource(fileName)) {
+				if (defaultStream != null) {
+					this.defaults = YamlConfiguration.loadConfiguration(new InputStreamReader(defaultStream, StandardCharsets.UTF_8));
+				} else {
+					this.defaults = null;
+				}
+			} catch (IOException e) {
+				throw new RuntimeException("Failed to load default config for " + fileName, e);
+			}
 		} else {
 			this.defaults = null;
 		}
 
-		this.file = extract(fileName);
+		extractDefaults(fileName);
 		loadConfig();
-	}
-
-	public void setPathPrefix(String pathPrefix) {
-		this.pathPrefix = pathPrefix;
 	}
 
 	public void reloadConfig() {
 		saveConfig();
-
 		loadConfig();
 	}
 
 	public void write(String path, Object value) {
 		set(path, value);
-
-		reloadConfig();
+		saveConfig();
 	}
 
 	public void saveConfig() {
 		try {
-
 			super.save(file);
-
-		} catch (final IOException ex) {
-			System.out.println("Failed to save configuration from " + file);
-
-			ex.printStackTrace();
+		} catch (IOException e) {
+			LimboPlugin.getPlugin().getLogger().severe("Failed to save config: " + e.getMessage());
 		}
 	}
 
 	private void loadConfig() {
 		try {
-
 			super.load(file);
-
-		} catch (final Throwable t) {
-			System.out.println("Failed to load configuration from " + file);
-
-			t.printStackTrace();
+		} catch (Exception e) {
+			LimboPlugin.getPlugin().getLogger().severe("Failed to load config: " + e.getMessage());
 		}
 	}
 
 	@Override
-	public Object get(String path, Object def) {
-		if (defaults != null) {
+	public Object get(@NotNull String path, Object def) {
+		if (defaults != null && def != null && !PrimitiveWrapper.isWrapperType(def.getClass())) {
+			throw new IllegalArgumentException("Defaults must be null. Using defaults from file. Path: " + path);
+		}
 
-			if (def != null && !def.getClass().isPrimitive() && !PrimitiveWrapper.isWrapperType(def.getClass()))
-				throw new IllegalArgumentException("The default value must be null since we use defaults from file inside of the plugin! Path: " + path + ", default called: " + def);
-
-			if (super.get(path, null) == null) {
-				final Object defaultValue = defaults.get(path);
+		if (defaults != null && super.get(path, null) == null) {
+			Object defaultValue = defaults.get(path);
+			if (defaultValue != null) {
 				write(path, defaultValue);
 			}
 		}
 
-		final String m = new Throwable().getStackTrace()[1].getMethodName();
-
-		if (defaults == null && pathPrefix != null && !m.equals("getConfigurationSection") && !m.equals("get"))
+		if (defaults == null && pathPrefix != null && !calledFrom("getConfigurationSection") && !calledFrom("get")) {
 			path = pathPrefix + "." + path;
+		}
 
 		return super.get(path, null);
 	}
 
 	@Override
-	public void set(String path, Object value) {
-		final String m = new Throwable().getStackTrace()[1].getMethodName();
-
-		if (defaults == null && pathPrefix != null && !m.equals("getConfigurationSection") && !m.equals("get"))
+	public void set(@NotNull String path, Object value) {
+		if (defaults == null && pathPrefix != null && !calledFrom("getConfigurationSection") && !calledFrom("get")) {
 			path = pathPrefix + "." + path;
-
+		}
 		super.set(path, value);
 	}
 
-	private File extract(String path) {
-		final JavaPlugin i = LimboPlugin.getPlugin();
-		final File file = new File(i.getDataFolder(), path);
-
-		if (file.exists())
-			return file;
-
-		createFileAndDirectory(path);
-
-		if (defaults != null)
-			try (InputStream is = i.getResource(path)) {
-				Files.copy(is, Paths.get(file.toURI()), StandardCopyOption.REPLACE_EXISTING);
-
-			} catch (final IOException e) {
-				e.printStackTrace();
+	private void extractDefaults(String fileName) {
+		if (!file.exists()) {
+			try {
+				Files.createDirectories(file.getParentFile().toPath());
+				Files.copy(LimboPlugin.getPlugin().getResource(fileName), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			} catch (IOException e) {
+				LimboPlugin.getPlugin().getLogger().severe("Failed to extract default config: " + e.getMessage());
 			}
-
-		return file;
+		}
 	}
 
-	private File createFileAndDirectory(String path) {
-
-		final File datafolder = LimboPlugin.getPlugin().getDataFolder();
-		final int lastIndex = path.lastIndexOf('/');
-		final File directory = new File(datafolder, path.substring(0, lastIndex >= 0 ? lastIndex : 0));
-
-		directory.mkdirs();
-
-		final File destination = new File(datafolder, path);
-
-		try {
-			destination.createNewFile();
-
-		} catch (final IOException ex) {
-			System.out.println("Failed to create file " + path);
-
-			ex.printStackTrace();
-		}
-
-		return destination;
+	private boolean calledFrom(String methodName) {
+		return new Throwable().getStackTrace()[1].getMethodName().equals(methodName);
 	}
 
 	private static final class PrimitiveWrapper {
@@ -157,7 +127,7 @@ public class ConfigHandler extends YamlConfiguration {
 		}
 
 		private static Set<Class<?>> getWrapperTypes() {
-			final Set<Class<?>> ret = new HashSet<>();
+			Set<Class<?>> ret = new HashSet<>();
 			ret.add(Boolean.class);
 			ret.add(Character.class);
 			ret.add(Byte.class);
@@ -170,5 +140,4 @@ public class ConfigHandler extends YamlConfiguration {
 			return ret;
 		}
 	}
-
 }

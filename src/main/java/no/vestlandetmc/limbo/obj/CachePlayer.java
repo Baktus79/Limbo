@@ -1,15 +1,20 @@
 package no.vestlandetmc.limbo.obj;
 
-import java.util.UUID;
-
+import lombok.Getter;
 import org.bukkit.Bukkit;
+
+import java.util.UUID;
 
 public class CachePlayer {
 
 	private final UUID uuid;
+	@Getter
 	private final long timestamp;
+	@Getter
 	private final long expire;
+	@Getter
 	private final String reason;
+	@Getter
 	private final UUID staffUUID;
 
 
@@ -21,28 +26,12 @@ public class CachePlayer {
 		this.reason = reason;
 	}
 
-	public long getTimestamp() {
-		return this.timestamp;
-	}
-
 	public String getName() {
 		return Bukkit.getOfflinePlayer(this.uuid).getName();
 	}
 
 	public UUID getUniqueId() {
 		return this.uuid;
-	}
-
-	public String getReason() {
-		return this.reason;
-	}
-
-	public long getExpire() {
-		return this.expire;
-	}
-
-	public UUID getStaffUUID() {
-		return this.staffUUID;
 	}
 
 }
