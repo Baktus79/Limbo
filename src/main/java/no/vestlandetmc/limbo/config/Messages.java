@@ -37,6 +37,7 @@ public class Messages extends ConfigHandler {
 			RELEASED_LIMBO_SILENCE,
 			PERMANENT_LIMBO_DISCORD,
 			TEMPORARY_LIMBO_DISCORD,
+			RELEASED_LIMBO_DISCORD,
 			NO_REASON,
 			RELOAD;
 
@@ -72,6 +73,7 @@ public class Messages extends ConfigHandler {
 		RELEASED_LIMBO_SILENCE = getString("announce.releasedLimboSilence");
 		PERMANENT_LIMBO_DISCORD = getString("discord.permanent-limbo");
 		TEMPORARY_LIMBO_DISCORD = getString("discord.temporary-limbo");
+		RELEASED_LIMBO_DISCORD = getString("discord.released-limbo");
 		NO_REASON = getString("announce.noReason");
 		RELOAD = getString("notifier.reload");
 	}

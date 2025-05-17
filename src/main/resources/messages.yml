@@ -36,3 +36,4 @@ notifier:
 discord:
   permanent-limbo: '%player% has been placed in Limbo by %bywhom%. Reason: %reason%'
   temporary-limbo: '%player% has been placed in Limbo by %bywhom% until %time%. Reason: %reason%'
+  released-limbo: '%player% has been released from Limbo by %bywhom%.'

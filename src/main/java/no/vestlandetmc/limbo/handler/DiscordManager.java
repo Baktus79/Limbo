@@ -34,7 +34,7 @@ public class DiscordManager {
 
 			int responseCode = connection.getResponseCode();
 			if (responseCode != 204) {
-				System.err.println("Failed to send webhook: HTTP " + responseCode);
+				LimboPlugin.getPlugin().getLogger().warning("Failed to send webhook: HTTP " + responseCode);
 			}
 		} catch (Exception e) {
 			LimboPlugin.getPlugin().getLogger().severe(e.getMessage());

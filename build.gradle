@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'no.vestlandetmc'
-version = '3.2.0'
+version = '3.2.1'
 
 repositories {
     mavenCentral()
@@ -24,7 +24,7 @@ shadowJar {
     relocate 'com.zaxxer.hikari', 'no.vestlandetmc.limbo.libs.hikari'
     relocate 'org.mariadb.jdbc', 'no.vestlandetmc.limbo.libs.mariadb'
     relocate 'org.bstats', 'no.vestlandetmc.limbo.libs.bstats'
-    
+
     archiveFileName.set('Limbo.jar')
 }
 
