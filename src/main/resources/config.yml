@@ -1,19 +1,19 @@
 Chat:
   BlackListedCommands:
-  - msg
-  - tell
-  - m
-  - r
-  - reply
+    - msg
+    - tell
+    - m
+    - r
+    - reply
 WorldSettings:
   DisableBlockBreak: true
   DisableBlockPlace: true
   DisableItemPickup: true
   DisableChat: true
   DisableVisible: true
-discordsrv:
+discord:
   enabled: false
-  textchannel: ''
+  webhookURL: ''
 database:
   engine: sqlite
   host: localhost

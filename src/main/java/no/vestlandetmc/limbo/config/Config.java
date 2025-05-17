@@ -9,31 +9,30 @@ public class Config extends ConfigHandler {
 	}
 
 	public static List<String>
-	BLACKLISTED_COMMANDS;
+			BLACKLISTED_COMMANDS;
 
 	public static String
-	HOST,
-	USER,
-	PASSWORD,
-	DATABASE,
-	PREFIX,
-	SQLTYPE,
-	DISCORD_CHANNEL;
+			HOST,
+			USER,
+			PASSWORD,
+			DATABASE,
+			SQLTYPE,
+			DISCORD_WEBHOOK_URL;
 
 	public static int
-	PORT,
-	MAX_POOL,
-	CON_TIMEOUT,
-	CON_LIFETIME;
+			PORT,
+			MAX_POOL,
+			CON_TIMEOUT,
+			CON_LIFETIME;
 
 	public static boolean
-	BLOCK_BREAK,
-	BLOCK_PLACE,
-	ITEM_PICKUP,
-	CHAT,
-	VISIBLE,
-	ENABLE_SSL,
-	DISCORDSRV_ENABLED;
+			BLOCK_BREAK,
+			BLOCK_PLACE,
+			ITEM_PICKUP,
+			CHAT,
+			VISIBLE,
+			ENABLE_SSL,
+			DISCORD_ENABLED;
 
 	private void onLoad() {
 
@@ -44,8 +43,8 @@ public class Config extends ConfigHandler {
 		CHAT = getBoolean("WorldSettings.DisableChat");
 		VISIBLE = getBoolean("WorldSettings.DisableVisible");
 
-		DISCORDSRV_ENABLED = getBoolean("discordsrv.enabled");
-		DISCORD_CHANNEL = getString("discordsrv.textchannel");
+		DISCORD_ENABLED = getBoolean("discord.enabled");
+		DISCORD_WEBHOOK_URL = getString("discord.webhookURL");
 
 		SQLTYPE = getString("database.engine");
 		HOST = getString("database.host");
