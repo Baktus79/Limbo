@@ -1,45 +1,47 @@
 package no.vestlandetmc.limbo.commands;
 
+import io.papermc.paper.command.brigadier.BasicCommand;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import no.vestlandetmc.limbo.LimboPlugin;
 import no.vestlandetmc.limbo.config.Config;
 import no.vestlandetmc.limbo.config.Messages;
-import no.vestlandetmc.limbo.handler.Announce;
-import no.vestlandetmc.limbo.handler.Callback;
-import no.vestlandetmc.limbo.handler.DataHandler;
-import no.vestlandetmc.limbo.handler.MessageHandler;
+import no.vestlandetmc.limbo.handler.*;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class templimboCommand implements CommandExecutor {
+@SuppressWarnings("UnstableApiUsage")
+public class templimboCommand implements BasicCommand {
 
-	private final DataHandler data = new DataHandler();
+	private final DataHandler data;
 
-	@SuppressWarnings("deprecation")
+	public templimboCommand(DataHandler data) {
+		this.data = data;
+	}
+
 	@Override
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		if (!(sender instanceof Player cPlayer)) {
+	public void execute(@NotNull CommandSourceStack commandSourceStack, String @NotNull [] args) {
+		if (!(commandSourceStack.getSender() instanceof Player cPlayer)) {
 			MessageHandler.sendConsole("&4This cannot be used from the console. You must be a player to use this command!");
-			return true;
+			return;
 		}
 
 		final Shared share = new Shared(cPlayer);
 
-		if (!sender.hasPermission("limbo.templimbo")) {
-			MessageHandler.sendMessage(cPlayer, Messages.placeholders(Messages.MISSING_PERMISSION, null, sender.getName(), null, null));
-			return true;
+		if (!cPlayer.hasPermission("limbo.templimbo")) {
+			MessageHandler.sendMessage(cPlayer, Messages.placeholders(Messages.MISSING_PERMISSION, null, cPlayer.getName(), null, null));
+			return;
 		}
 
 		if (args.length == 0) {
 			helpCommand.onCommand(cPlayer);
-			return true;
+			return;
 		}
 
 		boolean s = false;
@@ -55,23 +57,23 @@ public class templimboCommand implements CommandExecutor {
 		final boolean silence = s;
 
 		final Callback<OfflinePlayer> callback = player -> {
-			if (!share.playerCheck(player, argsArray.get(0))) {
+			if (!share.playerCheck(player)) {
 				return;
 			}
 
 			if (args.length < 2 || !DataHandler.isInt(argsArray.get(1).replaceAll("\\D", ""))) {
-				MessageHandler.sendMessage(cPlayer, Messages.placeholders(Messages.TYPE_VALID_NUMBER, player.getName(), sender.getName(), null, null));
-				MessageHandler.sendMessage(cPlayer, Messages.placeholders(Messages.CORRECT_FORMAT, player.getName(), sender.getName(), null, null));
+				MessageHandler.sendMessage(cPlayer, Messages.placeholders(Messages.TYPE_VALID_NUMBER, player.getName(), cPlayer.getName(), null, null));
+				MessageHandler.sendMessage(cPlayer, Messages.placeholders(Messages.CORRECT_FORMAT, player.getName(), cPlayer.getName(), null, null));
 				return;
 			} else if (DataHandler.getTime(argsArray.get(1)) == 0L) {
-				MessageHandler.sendMessage(cPlayer, Messages.placeholders(Messages.CORRECT_FORMAT, player.getName(), sender.getName(), null, null));
+				MessageHandler.sendMessage(cPlayer, Messages.placeholders(Messages.CORRECT_FORMAT, player.getName(), cPlayer.getName(), null, null));
 				return;
 			}
 
 			if (player.isOnline()) {
 				if (Config.VISIBLE) {
 					for (final Player p : Bukkit.getOnlinePlayers()) {
-						player.getPlayer().hidePlayer(LimboPlugin.getPlugin(), p);
+						Objects.requireNonNull(player.getPlayer()).hidePlayer(LimboPlugin.getPlugin(), p);
 					}
 				}
 			}
@@ -84,12 +86,35 @@ public class templimboCommand implements CommandExecutor {
 		};
 
 		final Runnable task = () -> {
-			final OfflinePlayer player = Bukkit.getOfflinePlayer(argsArray.get(0));
+			final OfflinePlayer player = Bukkit.getOfflinePlayer(argsArray.getFirst());
+
+			if (player.getName() == null) {
+				MessageHandler.sendMessage(cPlayer, Messages.placeholders(Messages.PLAYER_NONEXIST, argsArray.getFirst(), null, null, null));
+				return;
+			}
+
 			Bukkit.getScheduler().runTask(LimboPlugin.getPlugin(), () -> callback.execute(player));
 		};
 
 		this.data.runAsync(task);
+	}
 
-		return true;
+	@Override
+	public @NotNull Collection<String> suggest(@NotNull CommandSourceStack commandSourceStack, String @NotNull [] args) {
+		String partial = args.length > 0 ? args[args.length - 1].toLowerCase() : "";
+		return Bukkit.getOnlinePlayers().stream()
+				.map(Player::getName)
+				.filter(name -> name.toLowerCase().startsWith(partial))
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public boolean canUse(@NotNull CommandSender sender) {
+		return BasicCommand.super.canUse(sender);
+	}
+
+	@Override
+	public @Nullable String permission() {
+		return Permissions.TEMPLIMBO.getName();
 	}
 }

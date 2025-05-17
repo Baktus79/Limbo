@@ -1,58 +1,71 @@
 package no.vestlandetmc.limbo.handler;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import lombok.Getter;
 import no.vestlandetmc.limbo.LimboPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
+import java.net.URI;
 import java.net.URLConnection;
 
+@SuppressWarnings("UnstableApiUsage")
 public abstract class UpdateNotification extends BukkitRunnable {
 
-	private static int projectId;
+	@Getter
+	private static String projectSlug;
+	@Getter
 	private static String latestVersion = "";
 
-	public UpdateNotification(int projectId) {
-		UpdateNotification.projectId = projectId;
+	public UpdateNotification(String slug) {
+		UpdateNotification.projectSlug = slug;
 	}
 
 	@Override
 	public void run() {
-
 		try {
-			final URL url = new URL("https://api.spigotmc.org/legacy/update.php?resource=" + projectId);
-			final URLConnection con = url.openConnection();
+			URI uri = new URI("https://api.modrinth.com/v2/project/" + projectSlug + "/version");
+			URLConnection con = uri.toURL().openConnection();
+			con.setRequestProperty("User-Agent", "YourPluginName/1.0");
 
-			try (BufferedReader r = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
-				latestVersion = r.readLine();
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+				JsonElement element = JsonParser.parseReader(reader);
+
+				if (!element.isJsonArray()) return;
+
+				JsonArray array = element.getAsJsonArray();
+				for (JsonElement e : array) {
+					JsonObject version = e.getAsJsonObject();
+
+					if (!version.get("version_type").getAsString().equalsIgnoreCase("release")) {
+						continue;
+					}
+
+					latestVersion = version.get("version_number").getAsString();
+					break;
+				}
 			}
 
 			if (isUpdateAvailable()) {
 				onUpdateAvailable();
 			}
 
-		} catch (final IOException ex) {
-			ex.getStackTrace();
+		} catch (Exception e) {
+			LimboPlugin.getPlugin().getLogger().severe(e.getMessage());
 		}
 	}
 
 	public abstract void onUpdateAvailable();
 
 	public static boolean isUpdateAvailable() {
-		return !latestVersion.equals(LimboPlugin.getPlugin().getDescription().getVersion());
-	}
-
-	public static int getProjectId() {
-		return projectId;
-	}
-
-	public static String getLatestVersion() {
-		return latestVersion;
+		return !latestVersion.equals(LimboPlugin.getPlugin().getPluginMeta().getVersion());
 	}
 
 	public static String getCurrentVersion() {
-		return LimboPlugin.getPlugin().getDescription().getVersion();
+		return LimboPlugin.getPlugin().getPluginMeta().getVersion();
 	}
 }

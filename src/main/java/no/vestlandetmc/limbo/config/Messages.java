@@ -7,37 +7,38 @@ public class Messages extends ConfigHandler {
 	}
 
 	public static String
-	LIMBO_HELP,
-	LIMBO_COMMAND,
-	TEMPLIMBO,
-	UNLIMBO,
-	LIMBOLIST,
-	LIMBO_RELOAD,
-	LIST_HEADER,
-	NO_PLAYERS_LIMBO,
-	PERMANENT,
-	TEMPORARY,
-	TIME_PLACED,
-	PLACED_BY,
-	REASON_HOVER,
-	MISSING_PERMISSION,
-	PLAYER_NOT_ONLINE,
-	PLAYER_BYPASS,
-	PLAYER_EXIST_IN_LIMBO,
-	PLAYER_NONEXIST_IN_LIMBO,
-	TYPE_VALID_NUMBER,
-	CORRECT_FORMAT,
-	BLACKLISTED_COMMANDS,
-	PLACED_IN_LIMBO_ANNOUNCE,
-	PLACED_IN_LIMBO_ANNOUNCE_SILENCE,
-	TEMPORARY_LIMBO,
-	TEMPORARY_LIMBO_SILENCE,
-	RELEASED_LIMBO,
-	RELEASED_LIMBO_SILENCE,
-	PERMANENT_LIMBO_DISCORD,
-	TEMPORARY_LIMBO_DISCORD,
-	NO_REASON,
-	RELOAD;
+			LIMBO_HELP,
+			LIMBO_COMMAND,
+			TEMPLIMBO,
+			UNLIMBO,
+			LIMBOLIST,
+			LIMBO_RELOAD,
+			LIST_HEADER,
+			NO_PLAYERS_LIMBO,
+			PERMANENT,
+			TEMPORARY,
+			TIME_PLACED,
+			PLACED_BY,
+			REASON_HOVER,
+			MISSING_PERMISSION,
+			PLAYER_NOT_ONLINE,
+			PLAYER_BYPASS,
+			PLAYER_EXIST_IN_LIMBO,
+			PLAYER_NONEXIST_IN_LIMBO,
+			PLAYER_NONEXIST,
+			TYPE_VALID_NUMBER,
+			CORRECT_FORMAT,
+			BLACKLISTED_COMMANDS,
+			PLACED_IN_LIMBO_ANNOUNCE,
+			PLACED_IN_LIMBO_ANNOUNCE_SILENCE,
+			TEMPORARY_LIMBO,
+			TEMPORARY_LIMBO_SILENCE,
+			RELEASED_LIMBO,
+			RELEASED_LIMBO_SILENCE,
+			PERMANENT_LIMBO_DISCORD,
+			TEMPORARY_LIMBO_DISCORD,
+			NO_REASON,
+			RELOAD;
 
 	private void onLoad() {
 
@@ -59,6 +60,7 @@ public class Messages extends ConfigHandler {
 		PLAYER_BYPASS = getString("warningMessages.playerBypass");
 		PLAYER_EXIST_IN_LIMBO = getString("warningMessages.playerExistInLimbo");
 		PLAYER_NONEXIST_IN_LIMBO = getString("warningMessages.playerIsNotInLimbo");
+		PLAYER_NONEXIST = getString("warningMessages.playerNotExist");
 		TYPE_VALID_NUMBER = getString("warningMessages.typeValidNumber");
 		CORRECT_FORMAT = getString("warningMessages.correctFormat");
 		BLACKLISTED_COMMANDS = getString("warningMessages.blacklistedCommand");
@@ -83,22 +85,21 @@ public class Messages extends ConfigHandler {
 	}
 
 	public static String placeholders(String message, String player, String bywhom, String time, String reason, boolean discord) {
-		String converted = "";
+		String converted = message;
 
-		if(discord) {
-			converted = message.
-					replaceAll("%player%", player.replace("_", "\\_")).
-					replaceAll("%bywhom%", bywhom.replace("_", "\\_")).
-					replaceAll("%reason%", reason).
-					replaceAll("%time%", time);
+		if (player != null) {
+			String safePlayer = discord ? player.replace("_", "\\_") : player;
+			converted = converted.replace("%player%", safePlayer);
 		}
-
-		else {
-			converted = message.
-					replaceAll("%player%", player).
-					replaceAll("%bywhom%", bywhom).
-					replaceAll("%reason%", reason).
-					replaceAll("%time%", time);
+		if (bywhom != null) {
+			String safeBywhom = discord ? bywhom.replace("_", "\\_") : bywhom;
+			converted = converted.replace("%bywhom%", safeBywhom);
+		}
+		if (reason != null) {
+			converted = converted.replace("%reason%", reason);
+		}
+		if (time != null) {
+			converted = converted.replace("%time%", time);
 		}
 
 		return converted;

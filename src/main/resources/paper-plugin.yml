@@ -1,0 +1,9 @@
+name: Limbo
+version: '${version}'
+main: no.vestlandetmc.limbo.LimboPlugin
+api-version: '1.21'
+prefix: Limbo
+load: POSTWORLD
+authors: [ Baktus_79 ]
+description: Banish a player to limbo.
+website: https://www.vestlandetmc.no

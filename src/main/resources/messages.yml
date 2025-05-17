@@ -19,6 +19,7 @@ warningMessages:
   playerBypass: '&cYou can not send %player% to limbo!'
   playerExistInLimbo: '&cPlayer %player% is already in Limbo!'
   playerIsNotInLimbo: '&cPlayer %player% is not in limbo!'
+  playerNotExist: '&cPlayer %player% does not exist! Please check your spelling.'
   typeValidNumber: '&cYou need to type in a valid number!'
   correctFormat: '&cUse correct format: /templimbo [player] [time] (reason)'
   blacklistedCommand: '&cThis command can not be used when in limbo!'

@@ -1,5 +1,6 @@
 package no.vestlandetmc.limbo;
 
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import lombok.Getter;
 import no.vestlandetmc.limbo.commands.limboCommand;
 import no.vestlandetmc.limbo.commands.limbolistCommand;
@@ -7,63 +8,38 @@ import no.vestlandetmc.limbo.commands.templimboCommand;
 import no.vestlandetmc.limbo.commands.unlimboCommand;
 import no.vestlandetmc.limbo.config.Config;
 import no.vestlandetmc.limbo.config.Messages;
+import no.vestlandetmc.limbo.database.SQLHandler;
 import no.vestlandetmc.limbo.database.SqlPool;
-import no.vestlandetmc.limbo.handler.*;
+import no.vestlandetmc.limbo.handler.DataHandler;
+import no.vestlandetmc.limbo.handler.MessageHandler;
+import no.vestlandetmc.limbo.handler.Permissions;
+import no.vestlandetmc.limbo.handler.UpdateNotification;
 import no.vestlandetmc.limbo.listener.ChatListener;
 import no.vestlandetmc.limbo.listener.PlayerListener;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
+@SuppressWarnings({"deprecation", "UnstableApiUsage"})
 public class LimboPlugin extends JavaPlugin {
 
 	@Getter
 	private static LimboPlugin plugin;
-	private final boolean libraryExist = true;
-	private final List<Library> libraries = new ArrayList<>();
 
-	@Override
-	public void onLoad() {
-		libraries.add(new Library("https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/3.5.1/mariadb-java-client-3.5.1.jar",
-				"mariadb-java-client-3.5.1.jar", "org.mariadb.jdbc", this));
+	@Getter
+	private static DataHandler dataManager;
 
-		libraries.add(new Library("https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.33/mysql-connector-java-8.0.33.jar",
-				"mysql-connector-java-8.0.33.jar", "com.mysql.cj.jdbc.Driver", this));
-
-		libraries.add(new Library("https://repo1.maven.org/maven2/com/zaxxer/HikariCP/6.2.1/HikariCP-6.2.1.jar",
-				"HikariCP-6.2.1.jar", "com.zaxxer.hikari.HikariConfig", this));
-
-		libraries.add(new Library("https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.47.1.0/sqlite-jdbc-3.47.1.0.jar",
-				"sqlite-jdbc-3.47.1.0.jar", "org.sqlite.JDBC", this));
-	}
+	@Getter
+	private static SQLHandler sqlManager;
 
 	@Override
 	public void onEnable() {
 		plugin = this;
-		libraries.forEach(Library::load);
 
 		Messages.initialize();
 		Config.initialize();
-
-		if (!this.libraryExist) {
-			getLogger().warning("Please restart the server for the libraries to take effect...");
-			Bukkit.getPluginManager().disablePlugin(this);
-			return;
-		}
-
-		if (getServer().getPluginManager().getPlugin("DiscordSRV") != null) {
-			DiscordManager.discordEnabled();
-			MessageHandler.sendConsole("[" + getDescription().getPrefix() + "] Successfully hooked up to DiscordSRV v"
-					+ getServer().getPluginManager().getPlugin("DiscordSRV").getDescription().getVersion());
-
-			if (!Config.DISCORDSRV_ENABLED)
-				MessageHandler.sendConsole("[" + getDescription().getPrefix() + "] DiscordSRV is currently disabled in the config file.");
-		}
+		Permissions.register();
 
 		try {
 			new SqlPool().initialize();
@@ -71,35 +47,60 @@ public class LimboPlugin extends JavaPlugin {
 			getLogger().severe(e.getMessage());
 		}
 
-		Objects.requireNonNull(this.getCommand("limbo")).setExecutor(new limboCommand());
-		Objects.requireNonNull(this.getCommand("unlimbo")).setExecutor(new unlimboCommand());
-		Objects.requireNonNull(this.getCommand("limbolist")).setExecutor(new limbolistCommand());
-		Objects.requireNonNull(this.getCommand("templimbo")).setExecutor(new templimboCommand());
-		this.getServer().getPluginManager().registerEvents(new PlayerListener(), this);
-		this.getServer().getPluginManager().registerEvents(new ChatListener(), this);
-		this.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
-			new DataHandler().isExpired();
-		}, 0L, 60 * 20L);
+		sqlManager = new SQLHandler();
+		dataManager = new DataHandler(sqlManager);
 
-		new UpdateNotification(68055) {
+		getServer().getScheduler().runTaskAsynchronously(this, () -> dataManager.cachePlayerNames());
+
+		if (Config.DISCORD_ENABLED)
+			MessageHandler.sendConsole("[" + getDescription().getPrefix() + "] Discord feature is enable.");
+
+		this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, cmd -> {
+			cmd.registrar().register(
+					"limbo",
+					"Place a player in limbo.",
+					new limboCommand(dataManager));
+
+			cmd.registrar().register(
+					"templimbo",
+					"Place a player temporary in limbo.",
+					new templimboCommand(dataManager));
+
+			cmd.registrar().register(
+					"unlimbo",
+					"Remove a player from limbo.",
+					new unlimboCommand(dataManager, sqlManager));
+
+			cmd.registrar().register(
+					"limbolist",
+					"List players that are placed in limbo.",
+					new limbolistCommand(dataManager, sqlManager));
+		});
+
+		this.getServer().getPluginManager().registerEvents(new PlayerListener(dataManager), this);
+		this.getServer().getPluginManager().registerEvents(new ChatListener(dataManager), this);
+		this.getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> dataManager.isExpired(), 0L, 60 * 20L);
+
+		new UpdateNotification("limbo-plugin") {
 
 			@Override
 			public void onUpdateAvailable() {
-				getServer().getConsoleSender().sendMessage(ChatColor.GRAY + "-----------------------");
-				getServer().getConsoleSender().sendMessage(ChatColor.GRAY + "[Limbo] Version " + getLatestVersion() + " is now available!");
-				getServer().getConsoleSender().sendMessage(ChatColor.GRAY + "[Limbo] Download the update at https://www.spigotmc.org/resources/" + getProjectId());
-				getServer().getConsoleSender().sendMessage(ChatColor.GRAY + "-----------------------");
+				MessageHandler.sendConsole(
+						"&4-----------------------",
+						"&4[Limbo] Version " + getLatestVersion() + " is now available!",
+						"&4[Limbo] Download the update at https://modrinth.com/plugin/" + getProjectSlug(),
+						"&4-----------------------"
+				);
 			}
 		}.runTaskAsynchronously(this);
+
+		final int pluginId = 25816;
+		final Metrics metrics = new Metrics(this, pluginId);
 	}
 
 	@Override
 	public void onDisable() {
 		getServer().getScheduler().cancelTasks(this);
-
-		if (!this.libraryExist) {
-			return;
-		}
 
 		try {
 			if (!SqlPool.getDataSource().isClosed()) {

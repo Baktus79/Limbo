@@ -5,65 +5,50 @@ import no.vestlandetmc.limbo.config.Messages;
 import no.vestlandetmc.limbo.database.SQLHandler;
 import no.vestlandetmc.limbo.obj.CachePlayer;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DataHandler {
 
-	private final SQLHandler sql = new SQLHandler();
-	private static final HashMap<UUID, CachePlayer> LIMBO_CACHE = new HashMap<>();
+	private final SQLHandler sql;
+	private final HashMap<UUID, CachePlayer> LIMBO_CACHE = new HashMap<>();
+	private final Set<String> PLAYER_NAMES = ConcurrentHashMap.newKeySet();
 
-	public DataHandler() {
-
+	public DataHandler(SQLHandler sql) {
+		this.sql = sql;
 	}
-
-	/*
-	 * Callback<Boolean> callback = new Callback<Boolean>() {
-	 *     public void execute(Boolean b) {
-	 *
-	 *     }
-	 * };
-	 *
-	 * isLimbo(uuid, callback)
-	 */
 
 	public HashMap<UUID, CachePlayer> getAllPlayers() {
 		return LIMBO_CACHE;
 	}
 
-	public void isLimbo(UUID uuid, Callback<Boolean> callback) {
-		final Runnable task = () -> {
-			if (LIMBO_CACHE.containsKey(uuid)) {
-				callback.execute(true);
-				return;
-			}
-
+	public void cachePlayerNames() {
+		for (String uuidStr : sql.getAllPlayerNames()) {
 			try {
-				if (sql.ifLimbo(uuid)) {
-					callback.execute(true);
-					return;
+				UUID uuid = UUID.fromString(uuidStr);
+				OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+				String name = player.getName();
+
+				if (name != null) {
+					PLAYER_NAMES.add(name);
 				}
-			} catch (final SQLException e) {
-				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				LimboPlugin.getPlugin().getLogger().warning("Invalid UUID in database: " + uuidStr);
 			}
+		}
+	}
 
-			callback.execute(false);
-		};
-
-		runAsync(task);
+	public Set<String> getCachePlayerNames() {
+		return PLAYER_NAMES;
 	}
 
 	public boolean isLimbo(UUID uuid) {
 		return LIMBO_CACHE.containsKey(uuid);
-	}
-
-	public boolean isEmpty() {
-		return LIMBO_CACHE.isEmpty();
 	}
 
 	public void isExpired() {
@@ -81,14 +66,14 @@ public class DataHandler {
 
 				if (current >= cache.getExpire() && cache.getExpire() != -1) {
 					for (final Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-						player.getPlayer().showPlayer(LimboPlugin.getPlugin(), onlinePlayer);
+						Objects.requireNonNull(player.getPlayer()).showPlayer(LimboPlugin.getPlugin(), onlinePlayer);
 					}
 
 					final Runnable task = () -> {
 						try {
 							sql.deleteUser(uuid);
 						} catch (final SQLException e) {
-							e.printStackTrace();
+							LimboPlugin.getPlugin().getLogger().severe(e.getMessage());
 						}
 					};
 
@@ -99,12 +84,19 @@ public class DataHandler {
 		}
 	}
 
-	public boolean removePlayer(UUID uuid) {
-		if (LIMBO_CACHE.containsKey(uuid)) {
-			LIMBO_CACHE.remove(uuid);
-			return true;
-		} else {
-			return false;
+	public void removePlayerCache(UUID uuid) {
+		LIMBO_CACHE.remove(uuid);
+	}
+
+	public void removePlayer(UUID uuid) {
+		final OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+		LIMBO_CACHE.remove(uuid);
+		PLAYER_NAMES.remove(player.getName());
+
+		try {
+			this.sql.deleteUser(uuid);
+		} catch (final SQLException e) {
+			LimboPlugin.getPlugin().getLogger().severe(e.getMessage());
 		}
 	}
 
@@ -117,7 +109,7 @@ public class DataHandler {
 				try {
 					cache = sql.getPlayer(uuid);
 				} catch (final SQLException e) {
-					e.printStackTrace();
+					LimboPlugin.getPlugin().getLogger().severe(e.getMessage());
 				}
 
 				if (cache == null) {
@@ -136,45 +128,24 @@ public class DataHandler {
 		runAsync(task);
 	}
 
-	public boolean getDBPlayer(UUID uuid) {
-		if (!LIMBO_CACHE.containsKey(uuid)) {
-			CachePlayer cache = null;
-
-			try {
-				cache = sql.getPlayer(uuid);
-			} catch (final SQLException e) {
-				e.printStackTrace();
-			}
-
-			if (cache == null) {
-				return false;
-			}
-
-			LIMBO_CACHE.put(uuid, cache);
-
-			return true;
-		} else {
-			return false;
-		}
-	}
-
 	public void setPlayer(UUID uuid, UUID staffUUID, long timestamp, long expire, String reason) {
 		final CachePlayer cache = new CachePlayer(uuid, staffUUID, timestamp, expire, reason);
-		final Player player = Bukkit.getPlayer(uuid);
+		final OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
 
-		if (player != null) {
+		if (player.getName() != null) {
 			LIMBO_CACHE.put(uuid, cache);
+			PLAYER_NAMES.add(player.getName());
+
+			final Runnable task = () -> {
+				try {
+					sql.setUser(cache);
+				} catch (final SQLException e) {
+					LimboPlugin.getPlugin().getLogger().severe(e.getMessage());
+				}
+			};
+
+			runAsync(task);
 		}
-
-		final Runnable task = () -> {
-			try {
-				sql.setUser(cache);
-			} catch (final SQLException e) {
-				e.printStackTrace();
-			}
-		};
-
-		runAsync(task);
 	}
 
 	public static String reason(List<String> args, boolean temp) {
@@ -189,7 +160,7 @@ public class DataHandler {
 			final StringBuilder message = new StringBuilder();
 			for (int i = n; i < args.size(); i++) {
 				if (!args.get(i).equals("-s")) {
-					message.append(args.get(i) + " ");
+					message.append(args.get(i)).append(" ");
 				}
 			}
 			return message.toString();

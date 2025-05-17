@@ -9,7 +9,6 @@ import no.vestlandetmc.limbo.handler.MessageHandler;
 import no.vestlandetmc.limbo.handler.UpdateNotification;
 import no.vestlandetmc.limbo.obj.CachePlayer;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -22,11 +21,16 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.UUID;
 
 public class PlayerListener implements Listener {
 
-	private final DataHandler data = new DataHandler();
+	private final DataHandler data;
+
+	public PlayerListener(DataHandler data) {
+		this.data = data;
+	}
 
 	@EventHandler
 	public void playerJoin(PlayerJoinEvent p) {
@@ -44,7 +48,7 @@ public class PlayerListener implements Listener {
 
 				for (final Entry<UUID, CachePlayer> lp : this.data.getAllPlayers().entrySet()) {
 					final Player playerInLimbo = Bukkit.getPlayer(lp.getValue().getUniqueId());
-					playerInLimbo.getPlayer().hidePlayer(LimboPlugin.getPlugin(), player);
+					Objects.requireNonNull(playerInLimbo.getPlayer()).hidePlayer(LimboPlugin.getPlugin(), player);
 				}
 			};
 
@@ -55,11 +59,13 @@ public class PlayerListener implements Listener {
 
 		if (player.isOp()) {
 			if (UpdateNotification.isUpdateAvailable()) {
-				player.sendMessage(ChatColor.GREEN + "------------------------------------");
-				player.sendMessage(ChatColor.GREEN + "Limbo is outdated. Update is available!");
-				player.sendMessage(ChatColor.GREEN + "Your version is " + ChatColor.BOLD + UpdateNotification.getCurrentVersion() + ChatColor.GREEN + " and can be updated to version " + ChatColor.BOLD + UpdateNotification.getLatestVersion());
-				player.sendMessage(ChatColor.GREEN + "Get the new update at https://www.spigotmc.org/resources/" + UpdateNotification.getProjectId());
-				player.sendMessage(ChatColor.GREEN + "------------------------------------");
+				MessageHandler.sendMessage(player,
+						"&a------------------------------------",
+						"&aLimbo is outdated. Update is available!",
+						"&aYour version is &l" + UpdateNotification.getCurrentVersion() + " &aand can be updated to version &l" + UpdateNotification.getLatestVersion(),
+						"&aDownload the update at https://modrinth.com/plugin/" + UpdateNotification.getProjectSlug(),
+						"&a------------------------------------"
+				);
 			}
 		}
 
@@ -67,7 +73,7 @@ public class PlayerListener implements Listener {
 
 	@EventHandler
 	public void onPlayerLeave(PlayerQuitEvent e) {
-		this.data.removePlayer(e.getPlayer().getUniqueId());
+		this.data.removePlayerCache(e.getPlayer().getUniqueId());
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)

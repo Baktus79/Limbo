@@ -1,75 +1,26 @@
 package no.vestlandetmc.limbo.database;
 
+import no.vestlandetmc.limbo.LimboPlugin;
+import no.vestlandetmc.limbo.obj.CachePlayer;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Set;
 import java.util.UUID;
-
-import no.vestlandetmc.limbo.obj.CachePlayer;
 
 public class SQLHandler {
 
-	public SQLHandler() {	}
-
-	public boolean ifLimbo(UUID uuid) throws SQLException {
-		final String sql = "SELECT uuid FROM limbo WHERE uuid=?";
-
-		try(Connection connection = SqlPool.getDataSource().getConnection(); PreparedStatement statement = connection.prepareStatement(sql);) {
-			statement.setString(1, uuid.toString());
-
-			final ResultSet set = statement.executeQuery();
-
-			if(set.getFetchSize() != 0) { return true; }
-
-			if(connection != null)
-				connection.close();
-
-			if(statement != null)
-				statement.close();
-
-		} catch(final Exception e) {
-			e.printStackTrace();
-		}
-
-		return false;
-
-	}
-
-	public long getExpire(UUID uuid) throws SQLException {
-		final String sql = "SELECT expire FROM limbo WHERE uuid=?";
-
-		try(Connection connection = SqlPool.getDataSource().getConnection(); PreparedStatement statement = connection.prepareStatement(sql);) {
-			statement.setString(1, uuid.toString());
-
-			final ResultSet set = statement.executeQuery();
-
-			while (set.next()) {
-				final long expire = set.getLong("expire");
-
-				return expire;
-
-			}
-
-			if(connection != null)
-				connection.close();
-
-			if(statement != null)
-				statement.close();
-
-		} catch(final Exception e) {
-			e.printStackTrace();
-		}
-
-		return 0;
-
+	public SQLHandler() {
 	}
 
 	public LinkedHashMap<UUID, CachePlayer> getAll() throws SQLException {
 		final String sql = "SELECT * FROM limbo ORDER BY timestamp DESC";
 
-		try(Connection connection = SqlPool.getDataSource().getConnection(); PreparedStatement statement = connection.prepareStatement(sql);) {
+		try (Connection connection = SqlPool.getDataSource().getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 			final ResultSet set = statement.executeQuery();
 			final LinkedHashMap<UUID, CachePlayer> users = new LinkedHashMap<>();
 
@@ -85,26 +36,39 @@ public class SQLHandler {
 
 			}
 
-			if(connection != null)
-				connection.close();
-
-			if(statement != null)
-				statement.close();
-
 			return users;
 
-		} catch(final Exception e) {
-			e.printStackTrace();
+		} catch (final Exception e) {
+			LimboPlugin.getPlugin().getLogger().severe(e.getMessage());
 		}
 
 		return null;
 
 	}
 
+	public Set<String> getAllPlayerNames() {
+		final Set<String> tempSet = new HashSet<>();
+
+		try (Connection connection = SqlPool.getDataSource().getConnection();
+			 PreparedStatement statement = connection.prepareStatement("SELECT uuid FROM limbo");
+			 ResultSet rs = statement.executeQuery()) {
+
+			while (rs.next()) {
+				tempSet.add(rs.getString("uuid"));
+			}
+
+		} catch (SQLException e) {
+			LimboPlugin.getPlugin().getLogger().severe("Feil under lasting av spillernavn: " + e.getMessage());
+		}
+
+		return tempSet;
+	}
+
+
 	public CachePlayer getPlayer(UUID uuid) throws SQLException {
 		final String sql = "SELECT * FROM limbo WHERE uuid=?";
 
-		try(Connection connection = SqlPool.getDataSource().getConnection(); PreparedStatement statement = connection.prepareStatement(sql);) {
+		try (Connection connection = SqlPool.getDataSource().getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 			statement.setString(1, uuid.toString());
 
 			final ResultSet set = statement.executeQuery();
@@ -121,16 +85,10 @@ public class SQLHandler {
 
 			}
 
-			if(connection != null)
-				connection.close();
-
-			if(statement != null)
-				statement.close();
-
 			return cache;
 
-		} catch(final Exception e) {
-			e.printStackTrace();
+		} catch (final Exception e) {
+			LimboPlugin.getPlugin().getLogger().severe(e.getMessage());
 		}
 
 		return null;
@@ -140,7 +98,7 @@ public class SQLHandler {
 	public void setUser(CachePlayer cache) throws SQLException {
 		final String sql = "INSERT INTO limbo (uuid, staffuuid, timestamp, expire, reason) VALUES (?, ?, ?, ?, ?)";
 
-		try(Connection connection = SqlPool.getDataSource().getConnection(); PreparedStatement statement = connection.prepareStatement(sql);) {
+		try (Connection connection = SqlPool.getDataSource().getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 			statement.setString(1, cache.getUniqueId().toString());
 			statement.setString(2, cache.getStaffUUID().toString());
 			statement.setLong(3, cache.getTimestamp());
@@ -149,59 +107,23 @@ public class SQLHandler {
 
 			statement.executeUpdate();
 
-			if(connection != null)
-				connection.close();
-
-			if(statement != null)
-				statement.close();
-
-		} catch(final Exception e) {
-			e.printStackTrace();
+		} catch (final Exception e) {
+			LimboPlugin.getPlugin().getLogger().severe(e.getMessage());
 		}
 
 	}
 
-	public boolean deleteUser(UUID uuid) throws SQLException {
-		boolean complete;
+	public void deleteUser(UUID uuid) throws SQLException {
 		final String sql = "DELETE FROM limbo WHERE uuid=?";
 
-		try(Connection connection = SqlPool.getDataSource().getConnection(); PreparedStatement statement = connection.prepareStatement(sql);) {
+		try (Connection connection = SqlPool.getDataSource().getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
 			statement.setString(1, uuid.toString());
+			statement.executeUpdate();
 
-			if(statement.executeUpdate() == 0) {
-				complete = false;
-			} else { complete = true; }
-
-
-			if(connection != null)
-				connection.close();
-
-			if(statement != null)
-				statement.close();
-
-			return complete;
-
-		} catch(final Exception e) {
-			e.printStackTrace();
+		} catch (final Exception e) {
+			LimboPlugin.getPlugin().getLogger().severe(e.getMessage());
 		}
 
-		return false;
-	}
-
-	public void removeExpired() throws SQLException {
-		final String sql = "DELETE FROM limbo WHERE timestamp>expire";
-
-		try(Connection connection = SqlPool.getDataSource().getConnection(); PreparedStatement statement = connection.prepareStatement(sql);) {
-
-			if(connection != null)
-				connection.close();
-
-			if(statement != null)
-				statement.close();
-
-		} catch(final Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 }
