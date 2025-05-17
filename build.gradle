@@ -1,30 +1,37 @@
 plugins {
     id 'java'
-    id 'io.freefair.lombok' version '8.11'
+    id 'io.freefair.lombok' version '8.13.1'
+    id "io.github.goooler.shadow" version '8.1.8'
 }
 
 group = 'no.vestlandetmc'
-version = '3.1.2'
+version = '3.2.0'
 
 repositories {
     mavenCentral()
     maven { url 'https://jitpack.io' }
     maven { url 'https://repo.papermc.io/repository/maven-public/' }
-    maven { url 'https://nexus.scarsz.me/content/groups/public/' }
 }
 
 dependencies {
-    compileOnly 'io.papermc.paper:paper-api:1.21.3-R0.1-SNAPSHOT'
-    compileOnly 'org.xerial:sqlite-jdbc:3.47.1.0'
-    compileOnly 'com.zaxxer:HikariCP:6.2.1'
-    compileOnly 'mysql:mysql-connector-java:8.0.33'
-    compileOnly 'org.mariadb.jdbc:mariadb-java-client:3.5.1'
-    compileOnly 'com.discordsrv:discordsrv:1.28.0'
+    compileOnly 'io.papermc.paper:paper-api:1.21.5-R0.1-SNAPSHOT'
+    implementation 'com.zaxxer:HikariCP:6.3.0'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:3.5.3'
+    implementation 'org.bstats:bstats-bukkit:3.1.0'
 
 }
+shadowJar {
+    relocate 'com.zaxxer.hikari', 'no.vestlandetmc.limbo.libs.hikari'
+    relocate 'org.mariadb.jdbc', 'no.vestlandetmc.limbo.libs.mariadb'
+    relocate 'org.bstats', 'no.vestlandetmc.limbo.libs.bstats'
+    
+    archiveFileName.set('Limbo.jar')
+}
+
+build.dependsOn shadowJar
 
 jar {
-    archiveFileName.set('Limbo.jar')
+    enabled = false
 }
 
 def targetJavaVersion = 21
